@@ -1,23 +1,11 @@
 package main
 
-import (
-	log "github.com/sirupsen/logrus"
-
-	"github.com/fsnotify/fsnotify"
-)
-
 func main() {
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		log.Fatal(err)
-	}
+	project := NewProject(
+		"/Users/kkentzo/Workspace/agnostic_backend",
+		"",
+		[]string{".git", "coverage"})
 
-	defer watcher.Close()
-
-	project := &Project{
-		root: "/tmp/foo",
-	}
-
-	project.Monitor(watcher)
+	project.Monitor()
 
 }
