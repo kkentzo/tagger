@@ -1,29 +1,43 @@
 package main
 
-import log "github.com/sirupsen/logrus"
+import (
+	"context"
+	"fmt"
+
+	log "github.com/sirupsen/logrus"
+)
 
 type Project struct {
 	watcher *RecursiveWatcher
-	args    string // args to ctags binary
+	indexer *Indexer
+	program string
+	args    string
 	// TODO: add file types (a regex??) (inclusions)
 }
 
-func NewProject(root string, args string, exclude []string) *Project {
+func NewProject(root string, indexer *Indexer, exclude []string) *Project {
 	return &Project{
 		watcher: NewRecursiveWatcher(root, NewPathSet(exclude)),
-		args:    args,
+		indexer: indexer,
 	}
 }
 
-func (project *Project) Monitor() {
-	go project.watcher.Watch()
-	// TODO: listen on events from watcher to trigger indexing
-	for range project.watcher.trigger {
-		project.Reindex()
+func (project *Project) Monitor(ctx context.Context) {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel() // TODO: Use cancel appropriately (how?)
+	go project.watcher.Watch(ctx)
+	for {
+		select {
+		case <-ctx.Done():
+			fmt.Println("CANCELLED!")
+			return
+		case <-project.watcher.trigger:
+			project.Reindex()
+		}
 	}
-
 }
 
 func (project *Project) Reindex() {
-	log.Printf("Reindexing")
+	project.indexer.Index(project.watcher.Root)
+	log.Info("Reindexing!")
 }

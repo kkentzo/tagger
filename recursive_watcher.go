@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"os"
 	"path/filepath"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -10,9 +12,10 @@ import (
 )
 
 type RecursiveWatcher struct {
-	Root       string
-	Exclusions *PathSet
-	trigger    chan struct{}
+	Root         string
+	Exclusions   *PathSet
+	maxFrequency time.Duration
+	trigger      chan struct{}
 }
 
 func NewRecursiveWatcher(root string, exclusions *PathSet) *RecursiveWatcher {
@@ -23,43 +26,56 @@ func NewRecursiveWatcher(root string, exclusions *PathSet) *RecursiveWatcher {
 	}
 }
 
-func (rw *RecursiveWatcher) Trigger() <-chan struct{} {
-	return rw.trigger
-}
-
-func (rw *RecursiveWatcher) Watch() error {
+func (rw *RecursiveWatcher) Watch(ctx context.Context) error {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	defer watcher.Close()
 
+	defer close(rw.trigger) // TODO: initialize trigger in method (somehow)??
+
 	// add project files
 	add(rw.Root, watcher, rw.Exclusions)
 	// start monitoring
-	// TODO: we need a way out of this for loop
-	// TODO: when to trigger re-indexing??
-	//var msg struct{}
+	mustReindex := false
+	var idxMsg struct{}
+
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+
 	for {
 		select {
+		case <-ctx.Done():
+			return nil
+		case <-ticker.C:
+			if mustReindex {
+				rw.trigger <- idxMsg
+				mustReindex = false
+			}
 		case event := <-watcher.Events:
 			log.Printf("Event %s on %s", event.Op, event.Name)
 			if event.Op&fsnotify.Remove == fsnotify.Remove ||
 				event.Op&fsnotify.Rename == fsnotify.Rename {
 				remove(event.Name, watcher) // this is non-recursive...
+				mustReindex = true
 			} else if event.Op&fsnotify.Create == fsnotify.Create ||
 				event.Op&fsnotify.Write == fsnotify.Write {
 				fileInfo, err := os.Stat(event.Name)
 				if err != nil {
-					log.Error(err.Error())
+					log.Error(err.Error()) // stat error
 				} else if fileInfo.IsDir() {
 					add(event.Name, watcher, rw.Exclusions)
+					mustReindex = true
 				}
+			} else {
+				mustReindex = true
 			}
 		case err := <-watcher.Errors:
 			log.Error(err.Error())
 		}
 	}
+
 }
 
 func add(path string, watcher *fsnotify.Watcher, exclusions *PathSet) error {
