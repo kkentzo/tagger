@@ -41,7 +41,7 @@ func (rw *RecursiveWatcher) Watch(ctx context.Context) error {
 	mustReindex := false
 	var idxMsg struct{}
 
-	ticker := time.NewTicker(5 * time.Second)
+	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 
 	for {
@@ -54,6 +54,10 @@ func (rw *RecursiveWatcher) Watch(ctx context.Context) error {
 				mustReindex = false
 			}
 		case event := <-watcher.Events:
+			// TODO: make tags a parameter
+			if filepath.Base(event.Name) == "TAGS" {
+				continue
+			}
 			log.Printf("Event %s on %s", event.Op, event.Name)
 			if event.Op&fsnotify.Remove == fsnotify.Remove ||
 				event.Op&fsnotify.Rename == fsnotify.Rename {

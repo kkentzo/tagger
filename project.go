@@ -32,12 +32,12 @@ func (project *Project) Monitor(ctx context.Context) {
 			fmt.Println("CANCELLED!")
 			return
 		case <-project.watcher.trigger:
-			project.Reindex()
+			go project.Index()
 		}
 	}
 }
 
-func (project *Project) Reindex() {
+func (project *Project) Index() {
 	project.indexer.Index(project.watcher.Root)
 	log.Info("Reindexing!")
 }
