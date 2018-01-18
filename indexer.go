@@ -15,7 +15,7 @@ import (
 type Indexer struct {
 	Program string
 	Args    []string
-	File    string
+	TagFile string `yaml:"tag_file"`
 	Exclude []string
 }
 

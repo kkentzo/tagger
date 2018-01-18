@@ -2,10 +2,10 @@ indexer:
   program: ctags
   args:
     - -R
-  file: TAGS
+  tag_file: TAGS
   exclude:
     - .git
     - log
     - tmp
 projects:
-  - path: ~/Workspace/the_project
+  - path: ~/Workspace/agnostic_backend
