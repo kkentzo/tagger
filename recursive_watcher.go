@@ -35,6 +35,8 @@ func (rw *RecursiveWatcher) Watch(ctx context.Context) error {
 
 	defer close(rw.trigger) // TODO: initialize trigger in method (somehow)??
 
+	log.Info("Watching", rw.Root)
+
 	// add project files
 	add(rw.Root, watcher, rw.Exclusions)
 	// start monitoring
@@ -58,7 +60,7 @@ func (rw *RecursiveWatcher) Watch(ctx context.Context) error {
 			if filepath.Base(event.Name) == "TAGS" {
 				continue
 			}
-			log.Printf("Event %s on %s", event.Op, event.Name)
+			log.Debug("Event %s on %s", event.Op, event.Name)
 			if event.Op&fsnotify.Remove == fsnotify.Remove ||
 				event.Op&fsnotify.Rename == fsnotify.Rename {
 				remove(event.Name, watcher) // this is non-recursive...
@@ -92,7 +94,7 @@ func add(path string, watcher *fsnotify.Watcher, exclusions *PathSet) error {
 		if err != nil {
 			log.Error(err.Error())
 		}
-		log.Info("Adding", file)
+		log.Debug("Adding", file)
 	}
 	return nil
 }

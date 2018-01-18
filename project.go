@@ -10,16 +10,15 @@ import (
 type Project struct {
 	watcher *RecursiveWatcher
 	indexer *Indexer
-	program string
-	args    string
+	Path    string
+	Libs    []string
+	// TODO: add exclusions here
 	// TODO: add file types (a regex??) (inclusions)
 }
 
-func NewProject(root string, indexer *Indexer, exclude []string) *Project {
-	return &Project{
-		watcher: NewRecursiveWatcher(root, NewPathSet(exclude)),
-		indexer: indexer,
-	}
+func (project *Project) Initialize(config *Config) {
+	project.indexer = &config.Indexer
+	project.watcher = NewRecursiveWatcher(project.Path, NewPathSet(config.Indexer.Exclude))
 }
 
 func (project *Project) Monitor(ctx context.Context) {

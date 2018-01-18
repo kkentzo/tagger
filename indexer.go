@@ -13,8 +13,10 @@ import (
 
 // TODO: Make Indexer an interface; create RubyIndexer and GenericIndexer
 type Indexer struct {
-	command string
-	args    string
+	Program string
+	Args    []string
+	File    string
+	Exclude []string
 }
 
 func (indexer *Indexer) Index(root string) {
@@ -24,10 +26,13 @@ func (indexer *Indexer) Index(root string) {
 	cmd.Dir = root
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Error(err.Error())
+		log.Error(out, err.Error())
 	}
-	fmt.Println(rvmGemsetPath(root))
-	fmt.Println(string(out))
+}
+
+func (indexer *Indexer) args() string {
+	// Add exclusions string, language, File
+	return strings.Join(indexer.Args, " ")
 }
 
 func isRuby(root string) bool {

@@ -1,0 +1,11 @@
+indexer:
+  program: ctags
+  args:
+    - -R
+  file: TAGS
+  exclude:
+    - .git
+    - log
+    - tmp
+projects:
+  - path: ~/Workspace/the_project
