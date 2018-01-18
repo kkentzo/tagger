@@ -1,7 +1,9 @@
 indexer:
   program: ctags
   args:
+    - --languages=ruby
     - -R
+    - -e
   tag_file: TAGS
   exclude:
     - .git
