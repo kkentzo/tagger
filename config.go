@@ -1,10 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -14,12 +15,12 @@ type Config struct {
 	Projects []*Project
 }
 
-func NewConfig() *Config {
+func NewConfig(configFilePath string) *Config {
 	config := &Config{}
 	// TODO: Make path (demo.yml) a flag // if not supplied read from ~/.tagger.yml
-	contents, err := ioutil.ReadFile("demo.yml")
+	contents, err := ioutil.ReadFile(configFilePath)
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Fatal("Config file not found: ", configFilePath)
 	}
 	yaml.Unmarshal(contents, config)
 	process(config)

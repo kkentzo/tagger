@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"os"
 	"os/signal"
@@ -9,7 +10,10 @@ import (
 
 func main() {
 
-	config := NewConfig()
+	configFilePath := flag.String("c", substTilde("~/.tagger.yml"), "Path to config file")
+	flag.Parse()
+
+	config := NewConfig(*configFilePath)
 	fmt.Println(config)
 
 	c := make(chan os.Signal, 1)
