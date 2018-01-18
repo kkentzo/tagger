@@ -6,12 +6,22 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
 
+	// parse command line args
 	configFilePath := flag.String("c", substTilde("~/.tagger.yml"), "Path to config file")
+	debug := flag.Bool("d", false, "Activate debug logging level")
 	flag.Parse()
+
+	if *debug {
+		log.SetLevel(log.DebugLevel)
+	} else {
+		log.SetLevel(log.InfoLevel)
+	}
 
 	config := NewConfig(*configFilePath)
 	fmt.Println(config)
