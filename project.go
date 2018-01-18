@@ -11,9 +11,6 @@ type Project struct {
 	watcher *RecursiveWatcher
 	indexer *Indexer
 	Path    string
-	Libs    []string
-	// TODO: add exclusions here
-	// TODO: add file types (a regex??) (inclusions)
 }
 
 func (project *Project) Initialize(indexer *Indexer) {
