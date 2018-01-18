@@ -32,16 +32,21 @@ func (indexer *Indexer) Index(root string) {
 }
 
 func (indexer *Indexer) args(root string) []string {
-	// Add exclusions string, language, File
-	args := []string{
-		"-R",
-		"-e",
-		"--languages=ruby",
-		"-f TAGS",
-		"--exclude=.git",
+	args := []string{fmt.Sprintf("-f %s", indexer.TagFile)}
+	// add user-requested arguments
+	args = append(args, indexer.Args...)
+	// add excluded paths
+	exclusions := []string{}
+	for _, excl := range indexer.Exclude {
+		exclusions = append(exclusions, fmt.Sprintf("--exclude=%s", excl))
+	}
+	args = append(args, exclusions...)
+	// add paths to be indexed
+	paths := []string{
 		".",
 		rvmGemsetPath(root),
 	}
+	args = append(args, paths...)
 	return args
 }
 
