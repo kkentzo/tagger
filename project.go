@@ -19,11 +19,11 @@ func (project *Project) Initialize(indexer *Indexer) {
 }
 
 func (project *Project) Monitor(ctx context.Context) {
-	// perform an initial indexing
-	project.Index()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel() // TODO: Use cancel appropriately (how?)
 	go project.watcher.Watch(ctx)
+	// perform an initial indexing
+	project.Index()
 	for {
 		select {
 		case <-ctx.Done():
