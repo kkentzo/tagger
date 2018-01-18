@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 	"time"
@@ -26,7 +25,7 @@ func NewRecursiveWatcher(root string, exclusions *PathSet) *RecursiveWatcher {
 	}
 }
 
-func (rw *RecursiveWatcher) Watch(ctx context.Context) error {
+func (rw *RecursiveWatcher) Watch() error {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err.Error())
@@ -48,8 +47,6 @@ func (rw *RecursiveWatcher) Watch(ctx context.Context) error {
 
 	for {
 		select {
-		case <-ctx.Done():
-			return nil
 		case <-ticker.C:
 			if mustReindex {
 				rw.trigger <- idxMsg

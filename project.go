@@ -1,9 +1,6 @@
 package main
 
 import (
-	"context"
-	"fmt"
-
 	log "github.com/sirupsen/logrus"
 )
 
@@ -18,20 +15,12 @@ func (project *Project) Initialize(indexer *Indexer) {
 	project.watcher = NewRecursiveWatcher(project.Path, NewPathSet(indexer.Exclude))
 }
 
-func (project *Project) Monitor(ctx context.Context) {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel() // TODO: Use cancel appropriately (how?)
-	go project.watcher.Watch(ctx)
+func (project *Project) Monitor() {
+	go project.watcher.Watch()
 	// perform an initial indexing
 	project.Index()
-	for {
-		select {
-		case <-ctx.Done():
-			fmt.Println("CANCELLED!")
-			return
-		case <-project.watcher.trigger:
-			go project.Index()
-		}
+	for range project.watcher.trigger {
+		go project.Index()
 	}
 }
 
