@@ -17,7 +17,7 @@ func main() {
 
 	// TODO: do this for all projects
 	ctx, cancel := context.WithCancel(context.Background())
-	config.Projects[0].Initialize(config)
+	config.Projects[0].Initialize(&config.Indexer)
 	go config.Projects[0].Monitor(ctx)
 	// wait for interrupt signal
 	s := <-c

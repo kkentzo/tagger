@@ -16,12 +16,14 @@ type Project struct {
 	// TODO: add file types (a regex??) (inclusions)
 }
 
-func (project *Project) Initialize(config *Config) {
-	project.indexer = &config.Indexer
-	project.watcher = NewRecursiveWatcher(project.Path, NewPathSet(config.Indexer.Exclude))
+func (project *Project) Initialize(indexer *Indexer) {
+	project.indexer = indexer
+	project.watcher = NewRecursiveWatcher(project.Path, NewPathSet(indexer.Exclude))
 }
 
 func (project *Project) Monitor(ctx context.Context) {
+	// perform an initial indexing
+	project.Index()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel() // TODO: Use cancel appropriately (how?)
 	go project.watcher.Watch(ctx)
