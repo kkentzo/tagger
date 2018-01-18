@@ -61,7 +61,9 @@ func (rw *RecursiveWatcher) Watch(ctx context.Context) error {
 				continue
 			}
 			log.Debug("Event %s on %s", event.Op, event.Name)
-			if event.Op&fsnotify.Remove == fsnotify.Remove ||
+			if event.Op&fsnotify.Chmod == fsnotify.Chmod {
+				continue
+			} else if event.Op&fsnotify.Remove == fsnotify.Remove ||
 				event.Op&fsnotify.Rename == fsnotify.Rename {
 				remove(event.Name, watcher) // this is non-recursive...
 				mustReindex = true
