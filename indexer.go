@@ -22,7 +22,8 @@ type Indexer struct {
 func (indexer *Indexer) Index(root string) {
 	// TODO: implement exclusions and out file (-f)
 	// TODO: Does ctags binary exist?
-	cmd := exec.Command("ctags", "-R", "--languages=ruby", "-f TAGS", "--exclude=.git", ".", rvmGemsetPath(root))
+	args := indexer.args(root)
+	cmd := exec.Command(indexer.Program, args...)
 	cmd.Dir = root
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -30,9 +31,18 @@ func (indexer *Indexer) Index(root string) {
 	}
 }
 
-func (indexer *Indexer) args() string {
+func (indexer *Indexer) args(root string) []string {
 	// Add exclusions string, language, File
-	return strings.Join(indexer.Args, " ")
+	args := []string{
+		"-R",
+		"-e",
+		"--languages=ruby",
+		"-f TAGS",
+		"--exclude=.git",
+		".",
+		rvmGemsetPath(root),
+	}
+	return args
 }
 
 func isRuby(root string) bool {
