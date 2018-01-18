@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"sync"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -21,7 +22,11 @@ func main() {
 
 	config := NewConfig(*configFilePath)
 
-	// TODO: do this for all projects
-	config.Projects[0].Initialize(&config.Indexer)
-	config.Projects[0].Monitor()
+	var wg sync.WaitGroup
+	for _, project := range config.Projects {
+		project.Initialize(&config.Indexer)
+		go project.Monitor()
+		wg.Add(1)
+	}
+	wg.Wait()
 }
