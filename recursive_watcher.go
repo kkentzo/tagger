@@ -91,6 +91,7 @@ func add(path string, watcher *fsnotify.Watcher, exclusions *PathSet) error {
 	for _, file := range directories {
 		err := watcher.Add(file)
 		if err != nil {
+			// TODO: This raises a "Too many files open" on MacOS
 			log.Error(err.Error())
 		}
 		log.Debug("Adding", file)
