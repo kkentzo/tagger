@@ -2,8 +2,6 @@ package main
 
 import (
 	"io/ioutil"
-	"os"
-	"strings"
 
 	log "github.com/sirupsen/logrus"
 
@@ -12,7 +10,7 @@ import (
 
 type Config struct {
 	Indexer  *Indexer
-	Projects []*Project
+	Projects []struct{ Path string }
 }
 
 func NewConfig(configFilePath string) *Config {
@@ -23,25 +21,14 @@ func NewConfig(configFilePath string) *Config {
 		log.Fatal("Config file not found: ", configFilePath)
 	}
 	yaml.Unmarshal(contents, config)
-	prepareProjects(config)
 	return config
 }
 
 func prepareProjects(config *Config) {
 	// process ~ (HOME)
 	for _, project := range config.Projects {
-		project.Path = substTilde(project.Path)
-		project.Indexer = config.Indexer
-		project.Initialize()
+		project.Path = ExpandHomeDir(project.Path)
 		// TODO: Insert Indexer settings into project??
 	}
 	// TODO: check for ctags binary
-}
-
-func substTilde(path string) string {
-	if strings.Contains(path, "~") {
-		home := os.Getenv("HOME")
-		path = strings.Replace(path, "~", home, 1)
-	}
-	return path
 }

@@ -10,13 +10,16 @@ type Project struct {
 	Path    string
 }
 
-func DefaultProject(indexer *Indexer) *Project {
-	project := &Project{Path: "."}
-	return project
+func NewProject(path string, indexer *Indexer) *Project {
+	return &Project{
+		Path:    path,
+		Indexer: indexer,
+		watcher: NewRecursiveWatcher(path, NewPathSet(indexer.Exclude)),
+	}
 }
 
-func (project *Project) Initialize() {
-	project.watcher = NewRecursiveWatcher(project.Path, NewPathSet(project.Indexer.Exclude))
+func DefaultProject(indexer *Indexer) *Project {
+	return NewProject(".", indexer)
 }
 
 func (project *Project) Monitor() {
