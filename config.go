@@ -23,14 +23,16 @@ func NewConfig(configFilePath string) *Config {
 		log.Fatal("Config file not found: ", configFilePath)
 	}
 	yaml.Unmarshal(contents, config)
-	process(config)
+	prepareProjects(config)
 	return config
 }
 
-func process(config *Config) {
+func prepareProjects(config *Config) {
 	// process ~ (HOME)
 	for _, project := range config.Projects {
 		project.Path = substTilde(project.Path)
+		project.Indexer = config.Indexer
+		project.Initialize()
 		// TODO: Insert Indexer settings into project??
 	}
 	// TODO: check for ctags binary

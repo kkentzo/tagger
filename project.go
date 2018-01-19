@@ -6,19 +6,17 @@ import (
 
 type Project struct {
 	watcher *RecursiveWatcher
-	indexer *Indexer
+	Indexer *Indexer
 	Path    string
 }
 
 func DefaultProject(indexer *Indexer) *Project {
 	project := &Project{Path: "."}
-	project.Initialize(indexer)
 	return project
 }
 
-func (project *Project) Initialize(indexer *Indexer) {
-	project.indexer = indexer
-	project.watcher = NewRecursiveWatcher(project.Path, NewPathSet(indexer.Exclude))
+func (project *Project) Initialize() {
+	project.watcher = NewRecursiveWatcher(project.Path, NewPathSet(project.Indexer.Exclude))
 }
 
 func (project *Project) Monitor() {
@@ -31,6 +29,6 @@ func (project *Project) Monitor() {
 }
 
 func (project *Project) Index() {
-	project.indexer.Index(project.watcher.Root)
-	log.Info("Reindexing!")
+	project.Indexer.Index(project.watcher.Root)
+	log.Info("Indexing ", project.Path)
 }
