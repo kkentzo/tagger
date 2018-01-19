@@ -19,6 +19,15 @@ type Indexer struct {
 	Exclude []string
 }
 
+func DefaultIndexer() *Indexer {
+	return &Indexer{
+		Program: "ctags",
+		Args:    []string{"-R", "-e", "--languages=ruby"},
+		TagFile: "TAGS",
+		Exclude: []string{".git", "log", "tmp"},
+	}
+}
+
 func (indexer *Indexer) Index(root string) {
 	// TODO: implement exclusions and out file (-f)
 	// TODO: Does ctags binary exist?

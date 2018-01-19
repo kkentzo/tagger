@@ -34,10 +34,10 @@ func (rw *RecursiveWatcher) Watch() error {
 
 	defer close(rw.trigger) // TODO: initialize trigger in method (somehow)??
 
-	log.Info("Watching", rw.Root)
-
 	// add project files
 	add(rw.Root, watcher, rw.Exclusions)
+
+	log.Info("Watching ", rw.Root)
 	// start monitoring
 	mustReindex := false
 	var idxMsg struct{}

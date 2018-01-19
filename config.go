@@ -11,7 +11,7 @@ import (
 )
 
 type Config struct {
-	Indexer  Indexer
+	Indexer  *Indexer
 	Projects []*Project
 }
 
