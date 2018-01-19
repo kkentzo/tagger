@@ -44,7 +44,7 @@ func main() {
 
 	projects := make([]*Project, len(config.Projects))
 	for idx, p := range config.Projects {
-		projects[idx] = NewProject(p.Path, config.Indexer)
+		projects[idx] = NewProject(ExpandHomeDir(p.Path), config.Indexer)
 	}
 
 	manager := &Manager{Projects: projects}
