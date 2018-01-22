@@ -32,6 +32,7 @@ func main() {
 		log.SetLevel(log.InfoLevel)
 	}
 
+	// parse config
 	var config *Config
 	if *x {
 		config = &Config{
@@ -42,11 +43,16 @@ func main() {
 		config = NewConfig(*configFilePath)
 	}
 
-	projects := make([]*Project, len(config.Projects))
-	for idx, p := range config.Projects {
-		projects[idx] = NewProject(ExpandHomeDir(p.Path), config.Indexer)
+	// create projects
+	manager := &Manager{}
+	for _, p := range config.Projects {
+		path := ExpandHomeDir(p.Path)
+		project := &Project{
+			Path:    path,
+			Indexer: config.Indexer,
+			Watcher: NewRecursiveWatcher(path, NewPathSet(config.Indexer.Exclude)),
+		}
+		manager.Add(project)
 	}
-
-	manager := &Manager{Projects: projects}
 	manager.Start()
 }

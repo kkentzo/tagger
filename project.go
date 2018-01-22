@@ -5,33 +5,29 @@ import (
 )
 
 type Project struct {
-	watcher *RecursiveWatcher
-	Indexer *Indexer
 	Path    string
-}
-
-func NewProject(path string, indexer *Indexer) *Project {
-	return &Project{
-		Path:    path,
-		Indexer: indexer,
-		watcher: NewRecursiveWatcher(path, NewPathSet(indexer.Exclude)),
-	}
+	Indexer *Indexer
+	Watcher *RecursiveWatcher
 }
 
 func DefaultProject(indexer *Indexer) *Project {
-	return NewProject(".", indexer)
+	return &Project{
+		Path:    ".",
+		Indexer: indexer,
+		Watcher: NewRecursiveWatcher(".", NewPathSet(indexer.Exclude)),
+	}
 }
 
 func (project *Project) Monitor() {
-	go project.watcher.Watch()
+	go project.Watcher.Watch()
 	// perform an initial indexing
 	project.Index()
-	for range project.watcher.trigger {
+	for range project.Watcher.trigger {
 		go project.Index()
 	}
 }
 
 func (project *Project) Index() {
-	project.Indexer.Index(project.watcher.Root)
+	project.Indexer.Index(project.Watcher.Root)
 	log.Info("Indexing ", project.Path)
 }
