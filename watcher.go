@@ -16,19 +16,19 @@ type Watcher struct {
 	MaxFrequency time.Duration
 }
 
-func (rw *Watcher) Watch(indexEvents chan struct{}) error {
-	watcher, err := fsnotify.NewWatcher()
+func (watcher *Watcher) Watch(indexEvents chan struct{}) error {
+	fsWatcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	defer watcher.Close()
+	defer fsWatcher.Close()
 
 	defer close(indexEvents) // TODO: initialize Trigger in method (somehow)??
 
 	// add project files
-	add(rw.Root, watcher, rw.Exclusions)
+	add(watcher.Root, fsWatcher, watcher.Exclusions)
 
-	log.Info("Watching ", rw.Root)
+	log.Info("Watching ", watcher.Root)
 	// start monitoring
 	mustReindex := false
 	var idxMsg struct{}
@@ -43,7 +43,7 @@ func (rw *Watcher) Watch(indexEvents chan struct{}) error {
 				indexEvents <- idxMsg
 				mustReindex = false
 			}
-		case event := <-watcher.Events:
+		case event := <-fsWatcher.Events:
 			// TODO: make tags a parameter
 			if filepath.Base(event.Name) == "TAGS" {
 				continue
@@ -51,7 +51,7 @@ func (rw *Watcher) Watch(indexEvents chan struct{}) error {
 			log.Debugf("Event %s on %s", event.Op, event.Name)
 			if event.Op&fsnotify.Remove == fsnotify.Remove ||
 				event.Op&fsnotify.Rename == fsnotify.Rename {
-				remove(event.Name, watcher) // this is non-recursive...
+				remove(event.Name, fsWatcher) // this is non-recursive...
 				mustReindex = true
 			} else if event.Op&fsnotify.Create == fsnotify.Create ||
 				event.Op&fsnotify.Write == fsnotify.Write {
@@ -60,7 +60,7 @@ func (rw *Watcher) Watch(indexEvents chan struct{}) error {
 					log.Error(err.Error()) // stat error
 					continue
 				} else if fileInfo.IsDir() {
-					add(event.Name, watcher, rw.Exclusions)
+					add(event.Name, fsWatcher, watcher.Exclusions)
 				}
 				// TODO: Consider file type here??
 				mustReindex = true
@@ -69,20 +69,20 @@ func (rw *Watcher) Watch(indexEvents chan struct{}) error {
 			} else {
 				mustReindex = true
 			}
-		case err := <-watcher.Errors:
+		case err := <-fsWatcher.Errors:
 			log.Error(err.Error())
 		}
 	}
 
 }
 
-func add(path string, watcher *fsnotify.Watcher, exclusions *PathSet) error {
+func add(path string, fsWatcher *fsnotify.Watcher, exclusions *PathSet) error {
 	directories, err := discover(path, exclusions)
 	if err != nil {
 		return err
 	}
 	for _, file := range directories {
-		err := watcher.Add(file)
+		err := fsWatcher.Add(file)
 		if err != nil {
 			// TODO: This raises a "Too many files open" on MacOS
 			log.Error(err.Error())
@@ -92,8 +92,8 @@ func add(path string, watcher *fsnotify.Watcher, exclusions *PathSet) error {
 	return nil
 }
 
-func remove(path string, watcher *fsnotify.Watcher) error {
-	watcher.Remove(path)
+func remove(path string, fsWatcher *fsnotify.Watcher) error {
+	fsWatcher.Remove(path)
 	log.Info("Removing", path)
 	return nil
 }
