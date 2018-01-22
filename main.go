@@ -50,7 +50,10 @@ func main() {
 		project := &Project{
 			Path:    path,
 			Indexer: config.Indexer,
-			Watcher: NewRecursiveWatcher(path, NewPathSet(config.Indexer.Exclude)),
+			Watcher: &Watcher{
+				Root:       path,
+				Exclusions: NewPathSet(config.Indexer.Exclude),
+			},
 		}
 		manager.Add(project)
 	}

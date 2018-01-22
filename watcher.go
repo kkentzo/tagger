@@ -10,29 +10,20 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
-type RecursiveWatcher struct {
+type Watcher struct {
 	Root         string
 	Exclusions   *PathSet
 	maxFrequency time.Duration
-	trigger      chan struct{}
 }
 
-func NewRecursiveWatcher(root string, exclusions *PathSet) *RecursiveWatcher {
-	return &RecursiveWatcher{
-		Root:       root,
-		Exclusions: exclusions,
-		trigger:    make(chan struct{}),
-	}
-}
-
-func (rw *RecursiveWatcher) Watch() error {
+func (rw *Watcher) Watch(indexEvents chan struct{}) error {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	defer watcher.Close()
 
-	defer close(rw.trigger) // TODO: initialize trigger in method (somehow)??
+	defer close(indexEvents) // TODO: initialize Trigger in method (somehow)??
 
 	// add project files
 	add(rw.Root, watcher, rw.Exclusions)
@@ -49,7 +40,7 @@ func (rw *RecursiveWatcher) Watch() error {
 		select {
 		case <-ticker.C:
 			if mustReindex {
-				rw.trigger <- idxMsg
+				indexEvents <- idxMsg
 				mustReindex = false
 			}
 		case event := <-watcher.Events:
@@ -58,9 +49,7 @@ func (rw *RecursiveWatcher) Watch() error {
 				continue
 			}
 			log.Debugf("Event %s on %s", event.Op, event.Name)
-			if event.Op&fsnotify.Chmod == fsnotify.Chmod {
-				continue
-			} else if event.Op&fsnotify.Remove == fsnotify.Remove ||
+			if event.Op&fsnotify.Remove == fsnotify.Remove ||
 				event.Op&fsnotify.Rename == fsnotify.Rename {
 				remove(event.Name, watcher) // this is non-recursive...
 				mustReindex = true
@@ -69,10 +58,14 @@ func (rw *RecursiveWatcher) Watch() error {
 				fileInfo, err := os.Stat(event.Name)
 				if err != nil {
 					log.Error(err.Error()) // stat error
+					continue
 				} else if fileInfo.IsDir() {
 					add(event.Name, watcher, rw.Exclusions)
-					mustReindex = true
 				}
+				// TODO: Consider file type here??
+				mustReindex = true
+			} else if event.Op&fsnotify.Chmod == fsnotify.Chmod {
+				continue
 			} else {
 				mustReindex = true
 			}

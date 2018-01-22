@@ -7,22 +7,26 @@ import (
 type Project struct {
 	Path    string
 	Indexer *Indexer
-	Watcher *RecursiveWatcher
+	Watcher *Watcher
 }
 
 func DefaultProject(indexer *Indexer) *Project {
 	return &Project{
 		Path:    ".",
 		Indexer: indexer,
-		Watcher: NewRecursiveWatcher(".", NewPathSet(indexer.Exclude)),
+		Watcher: &Watcher{
+			Root:       ".",
+			Exclusions: NewPathSet(indexer.Exclude),
+		},
 	}
 }
 
 func (project *Project) Monitor() {
-	go project.Watcher.Watch()
+	indexEvents := make(chan struct{})
+	go project.Watcher.Watch(indexEvents)
 	// perform an initial indexing
 	project.Index()
-	for range project.Watcher.trigger {
+	for range indexEvents {
 		go project.Index()
 	}
 }
