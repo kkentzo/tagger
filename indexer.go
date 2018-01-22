@@ -7,16 +7,18 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 )
 
 // TODO: Make Indexer an interface; create RubyIndexer and GenericIndexer
 type Indexer struct {
-	Program string
-	Args    []string
-	TagFile string `yaml:"tag_file"`
-	Exclude []string
+	Program      string
+	Args         []string
+	TagFile      string `yaml:"tag_file"`
+	Exclude      []string
+	MaxFrequency time.Duration `yaml:"max_frequency"`
 }
 
 func DefaultIndexer() *Indexer {

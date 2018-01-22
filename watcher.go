@@ -13,7 +13,7 @@ import (
 type Watcher struct {
 	Root         string
 	Exclusions   *PathSet
-	maxFrequency time.Duration
+	MaxFrequency time.Duration
 }
 
 func (rw *Watcher) Watch(indexEvents chan struct{}) error {
@@ -33,7 +33,7 @@ func (rw *Watcher) Watch(indexEvents chan struct{}) error {
 	mustReindex := false
 	var idxMsg struct{}
 
-	ticker := time.NewTicker(1 * time.Second)
+	ticker := time.NewTicker(watcher.MaxFrequency)
 	defer ticker.Stop()
 
 	for {

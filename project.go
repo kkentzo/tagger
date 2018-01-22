@@ -18,8 +18,9 @@ func DefaultProject(indexer *Indexer) *Project {
 
 func (project *Project) Monitor() {
 	watcher := &Watcher{
-		Root:       project.Path,
-		Exclusions: NewPathSet(project.Indexer.Exclude),
+		Root:         project.Path,
+		Exclusions:   NewPathSet(project.Indexer.Exclude),
+		MaxFrequency: project.Indexer.MaxFrequency,
 	}
 	indexEvents := make(chan struct{})
 	go watcher.Watch(indexEvents)
