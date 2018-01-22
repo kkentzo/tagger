@@ -57,7 +57,7 @@ func (rw *RecursiveWatcher) Watch() error {
 			if filepath.Base(event.Name) == "TAGS" {
 				continue
 			}
-			log.Debug("Event %s on %s", event.Op, event.Name)
+			log.Debugf("Event %s on %s", event.Op, event.Name)
 			if event.Op&fsnotify.Chmod == fsnotify.Chmod {
 				continue
 			} else if event.Op&fsnotify.Remove == fsnotify.Remove ||
