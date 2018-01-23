@@ -12,7 +12,7 @@ import (
 
 type Watcher struct {
 	Root         string
-	Exclusions   *PathSet
+	Exclusions   []string
 	MaxFrequency time.Duration
 }
 
@@ -25,8 +25,11 @@ func (watcher *Watcher) Watch(indexEvents chan struct{}) error {
 
 	defer close(indexEvents) // TODO: initialize Trigger in method (somehow)??
 
+	// create set of excluded stuff
+	exclusions := NewPathSet(watcher.Exclusions)
+
 	// add project files
-	add(watcher.Root, fsWatcher, watcher.Exclusions)
+	add(watcher.Root, fsWatcher, exclusions)
 
 	log.Info("Watching ", watcher.Root)
 	// start monitoring
@@ -60,7 +63,7 @@ func (watcher *Watcher) Watch(indexEvents chan struct{}) error {
 					log.Error(err.Error()) // stat error
 					continue
 				} else if fileInfo.IsDir() {
-					add(event.Name, fsWatcher, watcher.Exclusions)
+					add(event.Name, fsWatcher, exclusions)
 				}
 				// TODO: Consider file type here??
 				mustReindex = true
