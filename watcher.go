@@ -14,22 +14,31 @@ type Watcher struct {
 	Root         string
 	Exclusions   []string
 	MaxFrequency time.Duration
+	fsWatcher    *fsnotify.Watcher
 }
 
-func (watcher *Watcher) Watch(indexEvents chan struct{}) error {
+func NewWatcher(root string, exclusions []string, maxFrequency time.Duration) *Watcher {
 	fsWatcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	defer fsWatcher.Close()
+	return &Watcher{
+		Root:         root,
+		Exclusions:   exclusions,
+		MaxFrequency: maxFrequency,
+		fsWatcher:    fsWatcher,
+	}
+}
 
-	defer close(indexEvents) // TODO: initialize Trigger in method (somehow)??
+func (watcher *Watcher) Watch(indexEvents chan<- struct{}) {
+	defer watcher.fsWatcher.Close() // TODO: Is this appropriate here?
+	//defer close(indexEvents) => FIX: should we? this makes the test pass!!!
 
 	// create set of excluded stuff
 	exclusions := NewPathSet(watcher.Exclusions)
 
 	// add project files
-	add(watcher.Root, fsWatcher, exclusions)
+	add(watcher.Root, watcher.fsWatcher, exclusions)
 
 	log.Info("Watching ", watcher.Root)
 	// start monitoring
@@ -46,7 +55,7 @@ func (watcher *Watcher) Watch(indexEvents chan struct{}) error {
 				indexEvents <- idxMsg
 				mustReindex = false
 			}
-		case event := <-fsWatcher.Events:
+		case event := <-watcher.fsWatcher.Events:
 			// TODO: make tags a parameter
 			if filepath.Base(event.Name) == "TAGS" {
 				continue
@@ -54,7 +63,7 @@ func (watcher *Watcher) Watch(indexEvents chan struct{}) error {
 			log.Debugf("Event %s on %s", event.Op, event.Name)
 			if event.Op&fsnotify.Remove == fsnotify.Remove ||
 				event.Op&fsnotify.Rename == fsnotify.Rename {
-				remove(event.Name, fsWatcher) // this is non-recursive...
+				remove(event.Name, watcher.fsWatcher) // this is non-recursive...
 				mustReindex = true
 			} else if event.Op&fsnotify.Create == fsnotify.Create ||
 				event.Op&fsnotify.Write == fsnotify.Write {
@@ -63,7 +72,7 @@ func (watcher *Watcher) Watch(indexEvents chan struct{}) error {
 					log.Error(err.Error()) // stat error
 					continue
 				} else if fileInfo.IsDir() {
-					add(event.Name, fsWatcher, exclusions)
+					add(event.Name, watcher.fsWatcher, exclusions)
 				}
 				// TODO: Consider file type here??
 				mustReindex = true
@@ -72,7 +81,7 @@ func (watcher *Watcher) Watch(indexEvents chan struct{}) error {
 			} else {
 				mustReindex = true
 			}
-		case err := <-fsWatcher.Errors:
+		case err := <-watcher.fsWatcher.Errors:
 			log.Error(err.Error())
 		}
 	}
