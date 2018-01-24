@@ -60,30 +60,36 @@ func (watcher *Watcher) Watch(indexEvents chan<- struct{}) {
 			if filepath.Base(event.Name) == "TAGS" {
 				continue
 			}
-			log.Debugf("Event %s on %s", event.Op, event.Name)
-			if event.Op&fsnotify.Remove == fsnotify.Remove ||
-				event.Op&fsnotify.Rename == fsnotify.Rename {
-				remove(event.Name, watcher.fsWatcher) // this is non-recursive...
-				mustReindex = true
-			} else if event.Op&fsnotify.Create == fsnotify.Create ||
-				event.Op&fsnotify.Write == fsnotify.Write {
-				fileInfo, err := os.Stat(event.Name)
-				if err != nil {
-					log.Error(err.Error()) // stat error
-					continue
-				} else if fileInfo.IsDir() {
-					add(event.Name, watcher.fsWatcher, exclusions)
-				}
-				// TODO: Consider file type here??
-				mustReindex = true
-			} else if event.Op&fsnotify.Chmod == fsnotify.Chmod {
-				continue
-			} else {
-				mustReindex = true
-			}
+			mustReindex = mustReindex ||
+				handle(event, watcher.fsWatcher, exclusions)
 		case err := <-watcher.fsWatcher.Errors:
 			log.Error(err.Error())
 		}
+	}
+
+}
+
+func handle(event fsnotify.Event, fsWatcher *fsnotify.Watcher, excl *PathSet) bool {
+	log.Infof("Event %s on %s", event.Op, event.Name)
+	if event.Op&fsnotify.Remove == fsnotify.Remove ||
+		event.Op&fsnotify.Rename == fsnotify.Rename {
+		remove(event.Name, fsWatcher) // this is non-recursive...
+		return true
+	} else if event.Op&fsnotify.Create == fsnotify.Create ||
+		event.Op&fsnotify.Write == fsnotify.Write {
+		fileInfo, err := os.Stat(event.Name)
+		if err != nil {
+			log.Error(err.Error()) // stat error
+			return false
+		} else if fileInfo.IsDir() {
+			add(event.Name, fsWatcher, excl)
+		}
+		// TODO: Consider file type here??
+		return true
+	} else if event.Op&fsnotify.Chmod == fsnotify.Chmod {
+		return false
+	} else {
+		return true
 	}
 
 }

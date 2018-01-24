@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/stretchr/testify/assert"
@@ -17,59 +16,74 @@ func TouchFile(t *testing.T, fname string) *os.File {
 	return f
 }
 
-func Test_Watcher_Start_Fires_OnFileCreation(t *testing.T) {
+func Test_Watcher_handle_ReturnsTrue_OnFileCreation(t *testing.T) {
 	// create the project directory
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
 	defer os.RemoveAll(path)
 
-	// create and setup the Watcher
+	// create and setup the filesystem watcher
 	fsWatcher, err := fsnotify.NewWatcher()
 	assert.Nil(t, err)
-	fsWatcher.Add(path)
-	watcher := &Watcher{
-		Root: path,
-		//MaxFrequency: 100 * time.Millisecond,
-		fsWatcher: fsWatcher,
-	}
-	indexEvents := make(chan struct{})
-	go watcher.Watch(indexEvents)
-
-	//time.Sleep(2 * time.Second)
+	defer fsWatcher.Close()
+	err = fsWatcher.Add(path)
+	assert.Nil(t, err)
+	// create the PathSet
+	pathSet := NewPathSet([]string{})
 
 	// fire!
 	TouchFile(t, filepath.Join(path, "test_file")).Close()
 
-	// grab the event
-	// !! if we read from a closed channel, this test is gonna pass no matter what
-	<-indexEvents
+	event := <-fsWatcher.Events
+	assert.True(t, handle(event, fsWatcher, pathSet))
 }
 
-func Test_Watcher_Fires_OnFileChange(t *testing.T) {
+func Test_Watcher_handle_ReturnsTrue_OnFileChange(t *testing.T) {
 	// create the project directory
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
 	defer os.RemoveAll(path)
 
-	// create a file
 	file := TouchFile(t, filepath.Join(path, "test_file"))
+	defer file.Close()
 
-	// create and setup the Watcher
+	// create and setup the filesystem watcher
 	fsWatcher, err := fsnotify.NewWatcher()
 	assert.Nil(t, err)
-	fsWatcher.Add(path)
-	watcher := &Watcher{
-		Root:         path,
-		MaxFrequency: 100 * time.Millisecond,
-		fsWatcher:    fsWatcher,
-	}
-	indexEvents := make(chan struct{})
-	go watcher.Watch(indexEvents)
+	defer fsWatcher.Close()
+	err = fsWatcher.Add(path)
+	assert.Nil(t, err)
+	// create the PathSet
+	pathSet := NewPathSet([]string{})
 
 	// fire!
 	file.WriteString("hello")
-	file.Close()
 
-	// grab the event
-	<-indexEvents
+	event := <-fsWatcher.Events
+	assert.True(t, handle(event, fsWatcher, pathSet))
+}
+
+func Test_Watcher_handle_ReturnsTrue_OnFileDeletion(t *testing.T) {
+	// create the project directory
+	path, err := ioutil.TempDir("", "tagger-tests")
+	assert.Nil(t, err)
+	defer os.RemoveAll(path)
+
+	fname := filepath.Join(path, "test_file")
+	TouchFile(t, fname).Close()
+
+	// create and setup the filesystem watcher
+	fsWatcher, err := fsnotify.NewWatcher()
+	assert.Nil(t, err)
+	defer fsWatcher.Close()
+	err = fsWatcher.Add(path)
+	assert.Nil(t, err)
+	// create the PathSet
+	pathSet := NewPathSet([]string{})
+
+	// fire!
+	os.Remove(fname)
+
+	event := <-fsWatcher.Events
+	assert.True(t, handle(event, fsWatcher, pathSet))
 }
