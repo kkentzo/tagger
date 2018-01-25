@@ -1,0 +1,32 @@
+* Milestones
+** DONE consume all info from demo.yml (with a global indexer)
+** DONE work on Indexer#Index (remove hard-coded stuff / parameterize command )
+** DONE Implement Indexer#args()
+** DONE implement flags for debug mode
+** DONE read yml from command line or home directory
+** DONE Monitor all specified projects
+* Further work
+** DONE Implement Default Indexer and Project (in cwd)
+** DONE Implement project manager
+** DONE Fix RecursiveWatcher impl ;; trigger @ recursive watcher
+*** it should come as an argument to method
+** DONE Rename RecursiveWatcher to Watcher
+** DONE Parameterize indexer frequency
+** WIP Write tests for Watcher
+** Add tests for watcher exclusions
+** Add an http interface for adding projects / reloading demo / stopping
+** write tests for other components (manager, project, indexer)
+** Measure indexing time per project - adjust maxFrequency accordingly
+** Write README
+** Advertise!! Publish!!
+** Configure logger properly (timestamp, prefixes)
+** Indexer stuff
+*** introduce per-project indexers in configuration (with merge logic)
+*** generalize indexer?? (default is ruby specific)
+*** split indexer logic to root and libs??
+**** ruby-specific: activate libs indexing when Gemfile.lock changes
+**** but doesn't this mean that we have to keep separate tags files (a-la guard)??
+***** should/could we keep the TAG files in-memory?? too expensive?
+***** perhaps introduce HOT projects?? (for in-memory processing)
+** Change PathSet to PathTree for filesystem
+*** implement additions, removals, sub-tree pruning, search
