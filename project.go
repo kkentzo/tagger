@@ -17,14 +17,15 @@ func DefaultProject(indexer *Indexer) *Project {
 }
 
 func (project *Project) Monitor() {
-	watcher := NewWatcher(project.Path, project.Indexer.Exclude, project.Indexer.MaxFrequency)
-	indexEvents := make(chan struct{})
-	go watcher.Watch(indexEvents)
 	// perform an initial indexing
-	project.Index()
-	for range indexEvents {
+	go project.Index()
+
+	watcher := NewWatcher(project.Path, project.Indexer.Exclude, project.Indexer.MaxFrequency)
+	go watcher.Watch()
+	for range watcher.Events() {
 		go project.Index()
 	}
+	watcher.Close()
 }
 
 func (project *Project) Index() {

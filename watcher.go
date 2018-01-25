@@ -10,11 +10,14 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
+var msg struct{}
+
 type Watcher struct {
 	Root         string
 	Exclusions   []string
 	MaxFrequency time.Duration
 	fsWatcher    *fsnotify.Watcher
+	events       chan struct{}
 }
 
 func NewWatcher(root string, exclusions []string, maxFrequency time.Duration) *Watcher {
@@ -27,13 +30,21 @@ func NewWatcher(root string, exclusions []string, maxFrequency time.Duration) *W
 		Exclusions:   exclusions,
 		MaxFrequency: maxFrequency,
 		fsWatcher:    fsWatcher,
+		events:       make(chan struct{}),
 	}
 }
 
-func (watcher *Watcher) Watch(indexEvents chan<- struct{}) {
-	defer watcher.fsWatcher.Close() // TODO: Is this appropriate here?
-	//defer close(indexEvents) => FIX: should we? this makes the test pass!!!
+func (watcher *Watcher) Events() chan struct{} {
+	return watcher.events
+}
 
+func (watcher *Watcher) Close() {
+	close(watcher.events)
+	watcher.fsWatcher.Close()
+}
+
+func (watcher *Watcher) Watch() {
+	defer close(watcher.events)
 	// create set of excluded stuff
 	exclusions := NewPathSet(watcher.Exclusions)
 
@@ -43,7 +54,6 @@ func (watcher *Watcher) Watch(indexEvents chan<- struct{}) {
 	log.Info("Watching ", watcher.Root)
 	// start monitoring
 	mustReindex := false
-	var idxMsg struct{}
 
 	ticker := time.NewTicker(watcher.MaxFrequency)
 	defer ticker.Stop()
@@ -52,7 +62,7 @@ func (watcher *Watcher) Watch(indexEvents chan<- struct{}) {
 		select {
 		case <-ticker.C:
 			if mustReindex {
-				indexEvents <- idxMsg
+				watcher.events <- msg
 				mustReindex = false
 			}
 		case event := <-watcher.fsWatcher.Events:
@@ -70,7 +80,7 @@ func (watcher *Watcher) Watch(indexEvents chan<- struct{}) {
 }
 
 func handle(event fsnotify.Event, fsWatcher *fsnotify.Watcher, excl *PathSet) bool {
-	log.Infof("Event %s on %s", event.Op, event.Name)
+	log.Debugf("Event %s on %s", event.Op, event.Name)
 	if event.Op&fsnotify.Remove == fsnotify.Remove ||
 		event.Op&fsnotify.Rename == fsnotify.Rename {
 		remove(event.Name, fsWatcher) // this is non-recursive...
