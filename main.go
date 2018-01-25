@@ -43,15 +43,6 @@ func main() {
 		config = NewConfig(*configFilePath)
 	}
 
-	// create projects
-	manager := &Manager{}
-	for _, p := range config.Projects {
-		path := ExpandHomeDir(p.Path)
-		project := &Project{
-			Path:    path,
-			Indexer: config.Indexer,
-		}
-		manager.Add(project)
-	}
+	manager := NewManager(config)
 	manager.Start()
 }
