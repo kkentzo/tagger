@@ -87,21 +87,18 @@ func handle(event fsnotify.Event, fsWatcher *fsnotify.Watcher, excl *PathSet) bo
 		return true
 	} else if event.Op&fsnotify.Create == fsnotify.Create ||
 		event.Op&fsnotify.Write == fsnotify.Write {
-		fileInfo, err := os.Stat(event.Name)
-		if err != nil {
-			log.Error(err.Error()) // stat error
+		if isDir, err := isDirectory(event.Name); err != nil {
+			log.Error(err.Error())
 			return false
-		} else if fileInfo.IsDir() {
+		} else if isDir {
 			add(event.Name, fsWatcher, excl)
 		}
-		// TODO: Consider file type here??
 		return true
 	} else if event.Op&fsnotify.Chmod == fsnotify.Chmod {
 		return false
 	} else {
 		return true
 	}
-
 }
 
 func add(path string, fsWatcher *fsnotify.Watcher, exclusions *PathSet) error {
@@ -145,4 +142,13 @@ func discover(root string, exclusions *PathSet) ([]string, error) {
 			return nil
 		})
 	return directories, err
+}
+
+func isDirectory(path string) (bool, error) {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return false, err
+	}
+
+	return fileInfo.IsDir(), nil
 }
