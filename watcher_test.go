@@ -16,7 +16,7 @@ func TouchFile(t *testing.T, fname string) *os.File {
 	return f
 }
 
-func Test_Watcher_handle_ReturnsTrue_OnFileCreation(t *testing.T) {
+func Test_handle_ReturnsTrue_OnFileCreation(t *testing.T) {
 	// create the project directory
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
@@ -38,7 +38,7 @@ func Test_Watcher_handle_ReturnsTrue_OnFileCreation(t *testing.T) {
 	assert.True(t, handle(event, fsWatcher, pathSet))
 }
 
-func Test_Watcher_handle_ReturnsTrue_OnFileChange(t *testing.T) {
+func Test_handle_ReturnsTrue_OnFileChange(t *testing.T) {
 	// create the project directory
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
@@ -63,7 +63,7 @@ func Test_Watcher_handle_ReturnsTrue_OnFileChange(t *testing.T) {
 	assert.True(t, handle(event, fsWatcher, pathSet))
 }
 
-func Test_Watcher_handle_ReturnsTrue_OnFileDeletion(t *testing.T) {
+func Test_handle_ReturnsTrue_OnFileDeletion(t *testing.T) {
 	// create the project directory
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
@@ -88,7 +88,7 @@ func Test_Watcher_handle_ReturnsTrue_OnFileDeletion(t *testing.T) {
 	assert.True(t, handle(event, fsWatcher, pathSet))
 }
 
-func Test_Watcher_handle_ReturnsTrue_OnFileRename(t *testing.T) {
+func Test_handle_ReturnsTrue_OnFileRename(t *testing.T) {
 	// create the project directory
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
@@ -117,7 +117,7 @@ func Test_Watcher_handle_ReturnsTrue_OnFileRename(t *testing.T) {
 	assert.True(t, handle(event, fsWatcher, pathSet))
 }
 
-func Test_Watcher_handle_ReturnTrue_OnDirectoryCreation(t *testing.T) {
+func Test_handle_ReturnTrue_OnDirectoryCreation(t *testing.T) {
 	// create the project directory
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
@@ -140,7 +140,7 @@ func Test_Watcher_handle_ReturnTrue_OnDirectoryCreation(t *testing.T) {
 	assert.True(t, handle(event, fsWatcher, pathSet))
 }
 
-func Test_Watcher_handle_ReturnTrue_OnDirectoryDeletion(t *testing.T) {
+func Test_handle_ReturnTrue_OnDirectoryDeletion(t *testing.T) {
 	// create the project directory
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
@@ -167,7 +167,7 @@ func Test_Watcher_handle_ReturnTrue_OnDirectoryDeletion(t *testing.T) {
 	assert.True(t, handle(event, fsWatcher, pathSet))
 }
 
-func Test_Watcher_handle_ReturnTrue_OnDirectoryRename(t *testing.T) {
+func Test_handle_ReturnTrue_OnDirectoryRename(t *testing.T) {
 	// create the project directory
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
