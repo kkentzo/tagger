@@ -16,6 +16,18 @@ func TouchFile(t *testing.T, fname string) *os.File {
 	return f
 }
 
+func Test_Watcher_Watch_ShouldCallHandlerFunc_OnFsNotify_Event(t *testing.T) {
+	t.Skip("Need to stub fswatcher")
+}
+
+func Test_Watcher_Watch_ShouldReindex_WhenTickerTicks(t *testing.T) {
+	t.Skip("Need to stub fswatcher")
+}
+
+func Test_Watcher_Watch_ShouldNotReindex_WhenTagFileChanges(t *testing.T) {
+	t.Skip("Need to stub fswatcher")
+}
+
 func Test_handle_ReturnsTrue_OnFileCreation(t *testing.T) {
 	// create the project directory
 	path, err := ioutil.TempDir("", "tagger-tests")

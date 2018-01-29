@@ -12,10 +12,13 @@ import (
 
 var msg struct{}
 
+type FsEventHandlerFunc func(fsnotify.Event, *fsnotify.Watcher, *PathSet) bool
+
 type Watcher struct {
 	Root         string
 	Exclusions   []string
 	MaxFrequency time.Duration
+	HandlerFunc  FsEventHandlerFunc
 	fsWatcher    *fsnotify.Watcher
 	events       chan struct{}
 }
@@ -29,6 +32,7 @@ func NewWatcher(root string, exclusions []string, maxFrequency time.Duration) *W
 		Root:         root,
 		Exclusions:   exclusions,
 		MaxFrequency: maxFrequency,
+		HandlerFunc:  handle,
 		fsWatcher:    fsWatcher,
 		events:       make(chan struct{}),
 	}
@@ -66,12 +70,12 @@ func (watcher *Watcher) Watch() {
 				mustReindex = false
 			}
 		case event := <-watcher.fsWatcher.Events:
-			// TODO: make tags a parameter
+			// TODO: make TAGS a parameter
 			if filepath.Base(event.Name) == "TAGS" {
 				continue
 			}
 			mustReindex = mustReindex ||
-				handle(event, watcher.fsWatcher, exclusions)
+				watcher.HandlerFunc(event, watcher.fsWatcher, exclusions)
 		case err := <-watcher.fsWatcher.Errors:
 			log.Error(err.Error())
 		}
