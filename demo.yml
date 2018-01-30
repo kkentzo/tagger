@@ -1,3 +1,4 @@
+port: 11254
 indexer:
   program: ctags
   args:

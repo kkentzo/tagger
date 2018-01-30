@@ -2,19 +2,9 @@ package main
 
 import (
 	"flag"
-	"os"
-	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
-
-func ExpandHomeDir(path string) string {
-	if strings.Contains(path, "~") {
-		home := os.Getenv("HOME")
-		path = strings.Replace(path, "~", home, 1)
-	}
-	return path
-}
 
 func main() {
 
@@ -44,5 +34,6 @@ func main() {
 	}
 
 	manager := NewManager(config)
+	go manager.Listen(config.Port)
 	manager.Start()
 }
