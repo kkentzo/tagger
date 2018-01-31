@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -89,14 +88,14 @@ func httpHandler(w http.ResponseWriter, r *http.Request, m *Manager) {
 	case "GET":
 		// TODO: Implement method (index of all projects)
 	case "POST":
-		body, err := ioutil.ReadAll(r.Body)
-		defer r.Body.Close()
-		if err != nil {
-			http.Error(w, err.Error(), 500)
+		if r.Body == nil {
+			http.Error(w, "Please send a request body", 400)
+			return
 		}
-		err = json.Unmarshal(body, &project)
+		err := json.NewDecoder(r.Body).Decode(&project)
 		if err != nil {
-			http.Error(w, err.Error(), 500)
+			http.Error(w, err.Error(), 400)
+			return
 		}
 		log.Debug("Received POST for", project.Path)
 		m.Add(project.Path)
