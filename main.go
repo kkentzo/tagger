@@ -11,7 +11,7 @@ func main() {
 	log.SetFormatter(&log.TextFormatter{})
 
 	// parse command line args
-	configFilePath := flag.String("c", ExpandHomeDir("~/.tagger.yml"), "Path to config file")
+	configFilePath := flag.String("c", Canonicalize("~/.tagger.yml"), "Path to config file")
 	debug := flag.Bool("d", false, "Activate debug logging level")
 	x := flag.Bool("x", false, "Generate tags in current directory and exit")
 	flag.Parse()

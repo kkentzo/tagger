@@ -84,7 +84,7 @@ func Test_fileExists_ReturnsFalse_IfFileDoesNotExist(t *testing.T) {
 	assert.False(t, fileExists("/foo"))
 }
 
-func Test_ExpandHomeDir(t *testing.T) {
+func Test_Canonicalize(t *testing.T) {
 	home := os.Getenv("HOME")
 	assert.NotEmpty(t, home)
 	var testCases = []struct {
@@ -97,6 +97,6 @@ func Test_ExpandHomeDir(t *testing.T) {
 		{"", ""},
 	}
 	for _, testCase := range testCases {
-		assert.Equal(t, testCase.expandedPath, ExpandHomeDir(testCase.path))
+		assert.Equal(t, testCase.expandedPath, Canonicalize(testCase.path))
 	}
 }

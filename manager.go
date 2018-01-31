@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -28,23 +30,31 @@ func NewManager(config *Config) *Manager {
 }
 
 func (manager *Manager) Add(path string) {
-	path = ExpandHomeDir(path)
+	path = Canonicalize(path)
 	// skip non-existent path
 	if !fileExists(path) {
+		log.Debugf("Path %s does not exist in filesystem", path)
+		return
+	}
+	if manager.Exists(path) {
+		log.Debugf("Path %s already monitored", path)
 		return
 	}
 	if _, ok := manager.projects[path]; !ok {
-		// TODO: Create cancellation context
-		manager.projects[path] = &Project{
+		project := &Project{
 			Path:    path,
 			Indexer: manager.indexer,
 		}
+		manager.projects[path] = project
 		manager.pg.Add(1)
+		// TODO: Create cancellation context and pass to Monitor
+		go project.Monitor()
 	}
 }
 
 func (manager *Manager) Remove(path string) {
-	// TODO: what happens if path does not exist? => 404
+	path = Canonicalize(path)
+	// what happens if path does not exist?
 	// This is legit in case the project root is deleted from the fs
 	if _, ok := manager.projects[path]; ok {
 		// TODO: Send cancellation signal to project
@@ -54,10 +64,12 @@ func (manager *Manager) Remove(path string) {
 	}
 }
 
+func (manager *Manager) Exists(path string) bool {
+	_, ok := manager.projects[Canonicalize(path)]
+	return ok
+}
+
 func (manager *Manager) Start() {
-	for _, project := range manager.projects {
-		go project.Monitor()
-	}
 	manager.pg.Wait()
 }
 
@@ -71,15 +83,16 @@ func (manager *Manager) Listen(port int) {
 }
 
 func httpHandler(w http.ResponseWriter, r *http.Request, m *Manager) {
+	var project struct{ Path string }
+
 	switch r.Method {
 	case "GET":
-		fmt.Println(r.Method)
+		// TODO: Implement method (index of all projects)
 	case "POST":
-		fmt.Println(r.Method)
 	case "DELETE":
-		fmt.Println(r.Method)
+		// TODO: Remove project
 	default:
-		fmt.Println(r.Method)
+		// TODO: 4xx response
 	}
 }
 
@@ -88,7 +101,7 @@ func fileExists(path string) bool {
 	return err == nil
 }
 
-func ExpandHomeDir(path string) string {
+func Canonicalize(path string) string {
 	if strings.Contains(path, "~") {
 		home := os.Getenv("HOME")
 		path = strings.Replace(path, "~", home, 1)
