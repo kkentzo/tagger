@@ -89,6 +89,19 @@ func httpHandler(w http.ResponseWriter, r *http.Request, m *Manager) {
 	case "GET":
 		// TODO: Implement method (index of all projects)
 	case "POST":
+		body, err := ioutil.ReadAll(r.Body)
+		defer r.Body.Close()
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+		}
+		err = json.Unmarshal(body, &project)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+		}
+		log.Debug("Received POST for", project.Path)
+		m.Add(project.Path)
+		w.WriteHeader(204)
+		return
 	case "DELETE":
 		// TODO: Remove project
 	default:
