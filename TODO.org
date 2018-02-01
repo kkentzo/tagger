@@ -12,9 +12,11 @@
 *** it should come as an argument to method
 ** DONE Rename RecursiveWatcher to Watcher
 ** DONE Parameterize indexer frequency
-** WIP Write tests for Watcher
-** Add tests for watcher exclusions
-** Add an http interface for adding projects / reloading demo / stopping
+** DONE Write tests for Watcher
+** DONE Add tests for watcher exclusions
+** DONE Add an http interface for adding projects / reloading demo / stopping
+** Introduce cancellation contexts for projects
+** Refactor Watcher / Project relationship
 ** write tests for other components (manager, project, indexer)
 ** Measure indexing time per project - adjust maxFrequency accordingly
 ** Write README

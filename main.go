@@ -33,7 +33,11 @@ func main() {
 		config = NewConfig(*configFilePath)
 	}
 
+	// create project manager
 	manager := NewManager(config)
-	go manager.Listen(config.Port)
+	// create server
+	server := &Server{Manager: manager, Port: config.Port}
+	go server.Listen()
+	// start monitoring
 	manager.Start()
 }

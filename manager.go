@@ -1,9 +1,6 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"net/http"
 	"os"
 	"strings"
 	"sync"
@@ -70,42 +67,6 @@ func (manager *Manager) Exists(path string) bool {
 
 func (manager *Manager) Start() {
 	manager.pg.Wait()
-}
-
-func (manager *Manager) Listen(port int) {
-	// register handlers
-	http.HandleFunc("/projects", func(w http.ResponseWriter, r *http.Request) {
-		httpHandler(w, r, manager)
-	})
-	// launch server
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
-}
-
-func httpHandler(w http.ResponseWriter, r *http.Request, m *Manager) {
-	var project struct{ Path string }
-
-	switch r.Method {
-	case "GET":
-		// TODO: Implement method (index of all projects)
-	case "POST":
-		if r.Body == nil {
-			http.Error(w, "Please send a request body", 400)
-			return
-		}
-		err := json.NewDecoder(r.Body).Decode(&project)
-		if err != nil {
-			http.Error(w, err.Error(), 400)
-			return
-		}
-		log.Debug("Received POST for", project.Path)
-		m.Add(project.Path)
-		w.WriteHeader(204)
-		return
-	case "DELETE":
-		// TODO: Remove project
-	default:
-		// TODO: 4xx response
-	}
 }
 
 func fileExists(path string) bool {
