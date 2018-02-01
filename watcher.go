@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"time"
@@ -47,8 +48,7 @@ func (watcher *Watcher) Close() {
 	watcher.fsWatcher.Close()
 }
 
-func (watcher *Watcher) Watch() {
-	defer close(watcher.events)
+func (watcher *Watcher) Watch(ctx context.Context) {
 	// create set of excluded stuff
 	exclusions := NewPathSet(watcher.Exclusions)
 
@@ -64,6 +64,8 @@ func (watcher *Watcher) Watch() {
 
 	for {
 		select {
+		case <-ctx.Done():
+			return
 		case <-ticker.C:
 			if mustReindex {
 				watcher.events <- msg

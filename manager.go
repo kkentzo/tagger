@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 	"strings"
 	"sync"
@@ -8,16 +9,21 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type ProjectWithContext struct {
+	Project *Project
+	Cancel  context.CancelFunc
+}
+
 type Manager struct {
 	indexer  *Indexer
-	projects map[string]*Project
+	projects map[string]*ProjectWithContext
 	pg       sync.WaitGroup
 }
 
 func NewManager(config *Config) *Manager {
 	manager := &Manager{
 		indexer:  config.Indexer,
-		projects: make(map[string]*Project),
+		projects: make(map[string]*ProjectWithContext),
 	}
 	for _, p := range config.Projects {
 		manager.Add(p.Path)
@@ -41,10 +47,13 @@ func (manager *Manager) Add(path string) {
 			Path:    path,
 			Indexer: manager.indexer,
 		}
-		manager.projects[path] = project
+		ctx, cancel := context.WithCancel(context.Background())
+		manager.projects[path] = &ProjectWithContext{
+			Project: project,
+			Cancel:  cancel,
+		}
 		manager.pg.Add(1)
-		// TODO: Create cancellation context and pass to Monitor
-		go project.Monitor()
+		go project.Monitor(ctx)
 	}
 }
 
@@ -52,8 +61,9 @@ func (manager *Manager) Remove(path string) {
 	path = Canonicalize(path)
 	// what happens if path does not exist?
 	// This is legit in case the project root is deleted from the fs
-	if _, ok := manager.projects[path]; ok {
-		// TODO: Send cancellation signal to project
+	if project, ok := manager.projects[path]; ok {
+		// Send cancellation signal to project
+		project.Cancel()
 		// remove project from registry
 		delete(manager.projects, path)
 		manager.pg.Done()

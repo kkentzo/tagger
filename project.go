@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -16,16 +18,23 @@ func DefaultProject(indexer *Indexer) *Project {
 	}
 }
 
-func (project *Project) Monitor() {
+func (project *Project) Monitor(ctx context.Context) {
 	// perform an initial indexing
 	go project.Index()
 
 	watcher := NewWatcher(project.Path, project.Indexer.Exclude, project.Indexer.MaxFrequency)
-	go watcher.Watch()
-	for range watcher.Events() {
-		go project.Index()
+	defer watcher.Close()
+	wctx, cancel := context.WithCancel(ctx)
+	go watcher.Watch(wctx)
+	for {
+		select {
+		case <-watcher.Events():
+			go project.Index()
+		case <-ctx.Done():
+			cancel()
+			return
+		}
 	}
-	watcher.Close()
 }
 
 func (project *Project) Index() {
