@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -18,7 +19,7 @@ func Test_NewManager(t *testing.T) {
 		Projects: []struct{ Path string }{
 			{Path: path},
 		},
-		Indexer: &Indexer{},
+		Indexer: &GenericIndexer{MaxFrequency: 2 * time.Second},
 	}
 	manager := NewManager(config)
 	assert.Equal(t, config.Indexer, manager.indexer)
@@ -28,7 +29,7 @@ func Test_NewManager(t *testing.T) {
 func Test_Manager_Add_WillNotAddProject_WhenPathDoesNotExist(t *testing.T) {
 	config := &Config{
 		Projects: []struct{ Path string }{},
-		Indexer:  &Indexer{},
+		Indexer:  &GenericIndexer{MaxFrequency: 2 * time.Second},
 	}
 	manager := NewManager(config)
 
@@ -43,7 +44,7 @@ func Test_Manager_Add_WillNotAddProject_WhenPathDoesNotExist(t *testing.T) {
 func Test_Manager_Add_WillAddProject_WhenPathExists(t *testing.T) {
 	config := &Config{
 		Projects: []struct{ Path string }{},
-		Indexer:  &Indexer{},
+		Indexer:  &GenericIndexer{MaxFrequency: 2 * time.Second},
 	}
 	manager := NewManager(config)
 
@@ -68,7 +69,7 @@ func Test_Manager_Remove_WillRemoveProjectFromManager(t *testing.T) {
 		Projects: []struct{ Path string }{
 			{Path: path},
 		},
-		Indexer: &Indexer{},
+		Indexer: &GenericIndexer{MaxFrequency: 2 * time.Second},
 	}
 	manager := NewManager(config)
 	assert.Contains(t, manager.projects, path)

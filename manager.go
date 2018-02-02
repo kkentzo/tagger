@@ -15,7 +15,7 @@ type ProjectWithContext struct {
 }
 
 type Manager struct {
-	indexer  *Indexer
+	indexer  Indexer
 	projects map[string]*ProjectWithContext
 	pg       sync.WaitGroup
 }
@@ -43,11 +43,10 @@ func (manager *Manager) Add(path string) {
 		return
 	}
 	if _, ok := manager.projects[path]; !ok {
-		watcher := NewWatcher(path, manager.indexer.Exclude, manager.indexer.MaxFrequency)
 		project := &Project{
 			Path:    path,
 			Indexer: manager.indexer,
-			Watcher: watcher,
+			Watcher: manager.indexer.CreateWatcher(path),
 		}
 		ctx, cancel := context.WithCancel(context.Background())
 		manager.projects[path] = &ProjectWithContext{

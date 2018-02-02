@@ -12,8 +12,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type Indexer interface {
+	Index(string)
+	CreateWatcher(string) *Watcher
+}
+
 // TODO: Make Indexer an interface; create RubyIndexer and GenericIndexer
-type Indexer struct {
+type GenericIndexer struct {
 	Program      string
 	Args         []string
 	TagFile      string `yaml:"tag_file"`
@@ -21,8 +26,8 @@ type Indexer struct {
 	MaxFrequency time.Duration `yaml:"max_frequency"`
 }
 
-func DefaultIndexer() *Indexer {
-	return &Indexer{
+func DefaultGenericIndexer() *GenericIndexer {
+	return &GenericIndexer{
 		Program: "ctags",
 		Args:    []string{"-R", "-e", "--languages=ruby"},
 		TagFile: "TAGS",
@@ -30,7 +35,7 @@ func DefaultIndexer() *Indexer {
 	}
 }
 
-func (indexer *Indexer) Index(root string) {
+func (indexer *GenericIndexer) Index(root string) {
 	// TODO: implement exclusions and out file (-f)
 	// TODO: Does ctags binary exist?
 	args := indexer.args(root)
@@ -42,7 +47,11 @@ func (indexer *Indexer) Index(root string) {
 	}
 }
 
-func (indexer *Indexer) args(root string) []string {
+func (indexer *GenericIndexer) CreateWatcher(root string) *Watcher {
+	return NewWatcher(root, indexer.Exclude, indexer.MaxFrequency)
+}
+
+func (indexer *GenericIndexer) args(root string) []string {
 	args := []string{fmt.Sprintf("-f %s", indexer.TagFile)}
 	// add user-requested arguments
 	args = append(args, indexer.Args...)

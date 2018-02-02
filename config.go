@@ -10,7 +10,7 @@ import (
 
 type Config struct {
 	Port     int
-	Indexer  *Indexer
+	Indexer  *GenericIndexer
 	Projects []struct{ Path string }
 }
 

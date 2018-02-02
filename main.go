@@ -26,7 +26,7 @@ func main() {
 	var config *Config
 	if *x {
 		config = &Config{
-			Indexer:  DefaultIndexer(),
+			Indexer:  DefaultGenericIndexer(),
 			Projects: []struct{ Path string }{{"."}},
 		}
 	} else {
