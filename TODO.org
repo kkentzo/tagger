@@ -16,8 +16,9 @@
 ** DONE Add tests for watcher exclusions
 ** DONE Add an http interface for adding projects / reloading demo / stopping
 ** DONE Introduce cancellation contexts for project / watcher
-** Refactor Watcher / Project relationship
+** DONE Refactor Watcher / Project relationship
 ** write tests for other components (manager, project, indexer)
+** test cleanups (Close() methods)
 ** Measure indexing time per project - adjust maxFrequency accordingly
 ** Write README
 ** Advertise!! Publish!!

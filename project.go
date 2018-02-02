@@ -9,26 +9,26 @@ import (
 type Project struct {
 	Path    string
 	Indexer *Indexer
+	Watcher *Watcher
 }
 
-func DefaultProject(indexer *Indexer) *Project {
+func DefaultProject(indexer *Indexer, watcher *Watcher) *Project {
 	return &Project{
 		Path:    ".",
 		Indexer: indexer,
+		Watcher: watcher,
 	}
 }
 
 func (project *Project) Monitor(ctx context.Context) {
 	// perform an initial indexing
 	go project.Index()
-
-	watcher := NewWatcher(project.Path, project.Indexer.Exclude, project.Indexer.MaxFrequency)
-	defer watcher.Close()
+	defer project.Watcher.Close()
 	wctx, cancel := context.WithCancel(ctx)
-	go watcher.Watch(wctx)
+	go project.Watcher.Watch(wctx)
 	for {
 		select {
-		case <-watcher.Events():
+		case <-project.Watcher.Events():
 			go project.Index()
 		case <-ctx.Done():
 			cancel()
