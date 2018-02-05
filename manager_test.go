@@ -21,7 +21,7 @@ func Test_NewManager(t *testing.T) {
 		},
 		Indexer: &GenericIndexer{MaxFrequency: 2 * time.Second},
 	}
-	manager := NewManager(config)
+	manager := NewManager(config.Indexer, config.Projects)
 	assert.Equal(t, config.Indexer, manager.indexer)
 	assert.Contains(t, manager.projects, path)
 }
@@ -31,7 +31,7 @@ func Test_Manager_Add_WillNotAddProject_WhenPathDoesNotExist(t *testing.T) {
 		Projects: []struct{ Path string }{},
 		Indexer:  &GenericIndexer{MaxFrequency: 2 * time.Second},
 	}
-	manager := NewManager(config)
+	manager := NewManager(config.Indexer, config.Projects)
 
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
@@ -46,7 +46,7 @@ func Test_Manager_Add_WillAddProject_WhenPathExists(t *testing.T) {
 		Projects: []struct{ Path string }{},
 		Indexer:  &GenericIndexer{MaxFrequency: 2 * time.Second},
 	}
-	manager := NewManager(config)
+	manager := NewManager(config.Indexer, config.Projects)
 
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
@@ -71,7 +71,7 @@ func Test_Manager_Remove_WillRemoveProjectFromManager(t *testing.T) {
 		},
 		Indexer: &GenericIndexer{MaxFrequency: 2 * time.Second},
 	}
-	manager := NewManager(config)
+	manager := NewManager(config.Indexer, config.Projects)
 	assert.Contains(t, manager.projects, path)
 	manager.Remove(path)
 	assert.NotContains(t, manager.projects, path)

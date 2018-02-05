@@ -2,10 +2,11 @@ port: 11254
 indexer:
   program: ctags
   args:
-    - --languages=ruby
     - -R
     - -e
+    - --languages=ruby
   tag_file: TAGS
+  type: rvm
   exclude:
     - .git
     - log

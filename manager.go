@@ -20,12 +20,12 @@ type Manager struct {
 	pg       sync.WaitGroup
 }
 
-func NewManager(config *Config) *Manager {
+func NewManager(indexer Indexer, projects []struct{ Path string }) *Manager {
 	manager := &Manager{
-		indexer:  config.Indexer,
+		indexer:  indexer,
 		projects: make(map[string]*ProjectWithContext),
 	}
-	for _, p := range config.Projects {
+	for _, p := range projects {
 		manager.Add(p.Path)
 	}
 	return manager

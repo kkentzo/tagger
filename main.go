@@ -34,7 +34,7 @@ func main() {
 	}
 
 	// create project manager
-	manager := NewManager(config)
+	manager := NewManager(config.Indexer, config.Projects)
 	// create server
 	server := &Server{Manager: manager, Port: config.Port}
 	go server.Listen()
