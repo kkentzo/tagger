@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -75,29 +74,4 @@ func Test_Manager_Remove_WillRemoveProjectFromManager(t *testing.T) {
 	assert.Contains(t, manager.projects, path)
 	manager.Remove(path)
 	assert.NotContains(t, manager.projects, path)
-}
-
-func Test_fileExists_ReturnsTrue_IfFileExists(t *testing.T) {
-	assert.True(t, fileExists("/tmp"))
-}
-
-func Test_fileExists_ReturnsFalse_IfFileDoesNotExist(t *testing.T) {
-	assert.False(t, fileExists("/foo"))
-}
-
-func Test_Canonicalize(t *testing.T) {
-	home := os.Getenv("HOME")
-	assert.NotEmpty(t, home)
-	var testCases = []struct {
-		path         string
-		expandedPath string
-	}{
-		{"~", home},
-		{"~/foo/bar", fmt.Sprintf("%s/foo/bar", home)},
-		{"/foo/bar", "/foo/bar"},
-		{"", ""},
-	}
-	for _, testCase := range testCases {
-		assert.Equal(t, testCase.expandedPath, Canonicalize(testCase.path))
-	}
 }

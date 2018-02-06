@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"os"
-	"strings"
 	"sync"
 
 	log "github.com/sirupsen/logrus"
@@ -34,7 +32,7 @@ func NewManager(indexer Indexer, projects []struct{ Path string }) *Manager {
 func (manager *Manager) Add(path string) {
 	path = Canonicalize(path)
 	// skip non-existent path
-	if !fileExists(path) {
+	if !FileExists(path) {
 		log.Debugf("Path %s does not exist in filesystem", path)
 		return
 	}
@@ -78,17 +76,4 @@ func (manager *Manager) Exists(path string) bool {
 
 func (manager *Manager) Start() {
 	manager.pg.Wait()
-}
-
-func fileExists(path string) bool {
-	_, err := os.Stat(path)
-	return err == nil
-}
-
-func Canonicalize(path string) string {
-	if strings.Contains(path, "~") {
-		home := os.Getenv("HOME")
-		path = strings.Replace(path, "~", home, 1)
-	}
-	return path
 }
