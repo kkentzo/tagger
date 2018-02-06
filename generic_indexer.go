@@ -33,8 +33,7 @@ func (indexer *GenericIndexer) CreateProjectIndexer(other *GenericIndexer) Index
 }
 
 func (indexer *GenericIndexer) Index(root string) {
-	// TODO: Does ctags binary exist?
-	args := indexer.args(root)
+	args := indexer.GetArguments(root)
 	cmd := exec.Command(indexer.Program, args...)
 	cmd.Dir = root
 	out, err := cmd.CombinedOutput()
@@ -47,7 +46,7 @@ func (indexer *GenericIndexer) CreateWatcher(root string) *Watcher {
 	return NewWatcher(root, indexer.Exclude, indexer.MaxFrequency)
 }
 
-func (indexer *GenericIndexer) args(root string) []string {
+func (indexer *GenericIndexer) GetArguments(root string) []string {
 	args := []string{fmt.Sprintf("-f %s", indexer.TagFile)}
 	// add user-requested arguments
 	args = append(args, indexer.Args...)
