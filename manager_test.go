@@ -4,7 +4,6 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -13,24 +12,23 @@ func Test_NewManager(t *testing.T) {
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
 	defer os.RemoveAll(path)
-
-	config := &Config{
-		Projects: []struct{ Path string }{
-			{Path: path},
-		},
-		Indexer: &GenericIndexer{MaxFrequency: 2 * time.Second},
+	projects := []struct{ Path string }{
+		{Path: path},
 	}
-	manager := NewManager(config.Indexer, config.Projects)
-	assert.Equal(t, config.Indexer, manager.indexer)
+	indexer := &MockIndexer{}
+	indexer.On("CreateWatcher", path).Return(&MockWatcher{})
+	indexer.On("Index", path)
+
+	manager := NewManager(indexer, projects)
+
+	assert.Equal(t, indexer, manager.indexer)
 	assert.Contains(t, manager.projects, path)
 }
 
 func Test_Manager_Add_WillNotAddProject_WhenPathDoesNotExist(t *testing.T) {
-	config := &Config{
-		Projects: []struct{ Path string }{},
-		Indexer:  &GenericIndexer{MaxFrequency: 2 * time.Second},
-	}
-	manager := NewManager(config.Indexer, config.Projects)
+	projects := []struct{ Path string }{}
+	indexer := &MockIndexer{}
+	manager := NewManager(indexer, projects)
 
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
@@ -41,22 +39,19 @@ func Test_Manager_Add_WillNotAddProject_WhenPathDoesNotExist(t *testing.T) {
 }
 
 func Test_Manager_Add_WillAddProject_WhenPathExists(t *testing.T) {
-	config := &Config{
-		Projects: []struct{ Path string }{},
-		Indexer:  &GenericIndexer{MaxFrequency: 2 * time.Second},
-	}
-	manager := NewManager(config.Indexer, config.Projects)
+	projects := []struct{ Path string }{}
+	indexer := &MockIndexer{}
+	manager := NewManager(indexer, projects)
 
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
 	defer os.RemoveAll(path)
 
+	indexer.On("CreateWatcher", path).Return(&MockWatcher{})
+	indexer.On("Index", path)
 	manager.Add(path)
+
 	assert.Contains(t, manager.projects, path)
-}
-
-func Test_Manager_Add_WillExpandTildeToHomeDir(t *testing.T) {
-
 }
 
 func Test_Manager_Remove_WillRemoveProjectFromManager(t *testing.T) {
@@ -64,14 +59,15 @@ func Test_Manager_Remove_WillRemoveProjectFromManager(t *testing.T) {
 	assert.Nil(t, err)
 	defer os.RemoveAll(path)
 
-	config := &Config{
-		Projects: []struct{ Path string }{
-			{Path: path},
-		},
-		Indexer: &GenericIndexer{MaxFrequency: 2 * time.Second},
+	projects := []struct{ Path string }{
+		{Path: path},
 	}
-	manager := NewManager(config.Indexer, config.Projects)
+	indexer := &MockIndexer{}
+	indexer.On("CreateWatcher", path).Return(&MockWatcher{})
+	indexer.On("Index", path)
+	manager := NewManager(indexer, projects)
 	assert.Contains(t, manager.projects, path)
+
 	manager.Remove(path)
 	assert.NotContains(t, manager.projects, path)
 }

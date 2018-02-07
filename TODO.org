@@ -1,7 +1,7 @@
 * Milestones
 ** DONE consume all info from demo.yml (with a global indexer)
 ** DONE work on Indexer#Index (remove hard-coded stuff / parameterize command )
-** DONE Implement Indexer#args()
+** DONE Implement Indexer#GetArguments()
 ** DONE implement flags for debug mode
 ** DONE read yml from command line or home directory
 ** DONE Monitor all specified projects
@@ -17,19 +17,20 @@
 ** DONE Add an http interface for adding projects / reloading demo / stopping
 ** DONE Introduce cancellation contexts for project / watcher
 ** DONE Refactor Watcher / Project relationship
-** write tests for other components (manager, project, indexer)
-** test cleanups (Close() methods)
-** Measure indexing time per project - adjust maxFrequency accordingly
-** Write README
-** Advertise!! Publish!!
-** Configure logger properly (timestamp, prefixes)
-** Indexer stuff
-*** introduce per-project indexers in configuration (with merge logic)
+** DONE Indexer stuff
+*** REJECTED introduce per-project indexers in configuration (with merge logic)
 *** generalize indexer?? (default is ruby specific)
-*** split indexer logic to root and libs??
+*** REJECTED split indexer logic to root and libs??
 **** ruby-specific: activate libs indexing when Gemfile.lock changes
 **** but doesn't this mean that we have to keep separate tags files (a-la guard)??
 ***** should/could we keep the TAG files in-memory?? too expensive?
 ***** perhaps introduce HOT projects?? (for in-memory processing)
+** introduce mock dependencies for testing manager, project, indexer
+** Adaptive indexing - Measure indexing time per project - adjust maxFrequency accordingly
+** test cleanups (Close() methods)
+** Write README
+** Advertise!! Publish!!
+** Configure logger properly (timestamp, prefixes)
+** In-memory tag indexing and processing ???
 ** Change PathSet to PathTree for filesystem
 *** implement additions, removals, sub-tree pruning, search
