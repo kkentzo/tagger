@@ -9,33 +9,44 @@ import (
 )
 
 func isRuby(root string) bool {
-	if _, err := os.Stat(filepath.Join(root, "Gemfile")); os.IsNotExist(err) {
-		return false
-	}
-	return true
+	return FileExists(filepath.Join(root, "Gemfile"))
 }
 
 func isRvm(root string) bool {
 	return isRuby(root) &&
-		fileExists(filepath.Join(root, ".ruby-version")) &&
-		fileExists(filepath.Join(root, ".ruby-gemset"))
+		FileExists(filepath.Join(root, ".ruby-version")) &&
+		FileExists(filepath.Join(root, ".ruby-gemset"))
 }
 
-func rubyVersion(root string) string {
-	rv, _ := ioutil.ReadFile(filepath.Join(root, ".ruby-version"))
-	// TODO: Deal with error
-	return strings.TrimSpace(string(rv))
+func rubyVersion(root string) (string, error) {
+	rv, err := ioutil.ReadFile(filepath.Join(root, ".ruby-version"))
+	if err != nil {
+		return "", err
+	} else {
+		return strings.TrimSpace(string(rv)), nil
+	}
 }
 
-func rubyGemset(root string) string {
-	rg, _ := ioutil.ReadFile(filepath.Join(root, ".ruby-gemset"))
-	// TODO: Catch errors!
-	return strings.TrimSpace(string(rg))
+func rubyGemset(root string) (string, error) {
+	rg, err := ioutil.ReadFile(filepath.Join(root, ".ruby-gemset"))
+	if err != nil {
+		return "", err
+	} else {
+		return strings.TrimSpace(string(rg)), nil
+	}
 }
 
-func rvmGemsetPath(root string) string {
-	// TODO: support other stuff besides rvm
-	// cmd := exec.Command("bash", "-l", "-c", "rvm gemset use GEMSET_HERE; bundle list --paths")
-	return filepath.Join(os.Getenv("HOME"),
-		fmt.Sprintf(".rvm/gems/%s@%s/gems", rubyVersion(root), rubyGemset(root)))
+func rvmGemsetPath(root string) (string, error) {
+	rv, err := rubyVersion(root)
+	if err != nil {
+		return "", err
+	}
+	rg, err := rubyVersion(root)
+	if err != nil {
+		return "", err
+	}
+	path := filepath.Join(os.Getenv("HOME"),
+		fmt.Sprintf(".rvm/gems/%s@%s/gems", rv, rg))
+	return path, nil
+
 }

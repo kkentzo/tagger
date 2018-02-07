@@ -62,7 +62,11 @@ func (indexer *GenericIndexer) GetArguments(root string) []string {
 	}
 	// is this an RVM project?
 	if indexer.Type == Rvm && isRvm(root) {
-		paths = append(paths, rvmGemsetPath(root))
+		if gemsetPath, err := rvmGemsetPath(root); err != nil {
+			log.Error("Can not determine gemset path for rvm project at ", root)
+		} else {
+			paths = append(paths, gemsetPath)
+		}
 	}
 	args = append(args, paths...)
 	return args

@@ -8,6 +8,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TouchFile(t *testing.T, fname string) *os.File {
+	f, err := os.Create(fname)
+	assert.Nil(t, err)
+	return f
+}
+
 func Test_FileExists_ReturnsTrue_IfFileExists(t *testing.T) {
 	assert.True(t, FileExists(os.Getenv("HOME")))
 }

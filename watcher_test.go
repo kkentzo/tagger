@@ -10,12 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TouchFile(t *testing.T, fname string) *os.File {
-	f, err := os.Create(fname)
-	assert.Nil(t, err)
-	return f
-}
-
 func Test_Watcher_Watch_ShouldCallHandlerFunc_OnFsNotify_Event(t *testing.T) {
 	t.Skip("Need to stub fswatcher")
 }
