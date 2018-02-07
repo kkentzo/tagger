@@ -25,10 +25,7 @@ func (project *Project) Monitor(ctx context.Context) {
 	go project.Index()
 	defer project.Watcher.Close()
 	wctx, cancel := context.WithCancel(ctx)
-	// TODO: Rethink this type assertion
-	// should Watch be part of the interface?
-	// however, this would make FsWatcher incompatible
-	go project.Watcher.(*ProjectWatcher).Watch(wctx)
+	go project.Watcher.Watch(wctx)
 	for {
 		select {
 		case <-project.Watcher.Events():

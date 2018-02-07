@@ -14,9 +14,7 @@ import (
 var msg struct{}
 
 type Watcher interface {
-	// TODO: Revisit interface
-	//Add(path string)
-	//Remove(path string)
+	Watch(context.Context)
 	Events() chan struct{}
 	Close()
 }

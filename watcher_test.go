@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -13,6 +14,17 @@ import (
 
 type MockWatcher struct {
 	mock.Mock
+}
+
+// TODO: Write stub code here
+func (watcher *MockWatcher) Watch(ctx context.Context) {
+}
+
+func (watcher *MockWatcher) Events() chan struct{} {
+	return nil
+}
+
+func (watcher *MockWatcher) Close() {
 }
 
 func Test_ProjectWatcher_Watch_ShouldCallHandlerFunc_OnFsNotify_Event(t *testing.T) {
