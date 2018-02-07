@@ -8,17 +8,22 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
-func Test_Watcher_Watch_ShouldCallHandlerFunc_OnFsNotify_Event(t *testing.T) {
+type MockWatcher struct {
+	mock.Mock
+}
+
+func Test_ProjectWatcher_Watch_ShouldCallHandlerFunc_OnFsNotify_Event(t *testing.T) {
 	t.Skip("Need to stub fswatcher")
 }
 
-func Test_Watcher_Watch_ShouldReindex_WhenTickerTicks(t *testing.T) {
+func Test_ProjectWatcher_Watch_ShouldReindex_WhenTickerTicks(t *testing.T) {
 	t.Skip("Need to stub fswatcher")
 }
 
-func Test_Watcher_Watch_ShouldNotReindex_WhenTagFileChanges(t *testing.T) {
+func Test_ProjectWatcher_Watch_ShouldNotReindex_WhenTagFileChanges(t *testing.T) {
 	t.Skip("Need to stub fswatcher")
 }
 

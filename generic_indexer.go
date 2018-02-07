@@ -42,8 +42,8 @@ func (indexer *GenericIndexer) Index(root string) {
 	}
 }
 
-func (indexer *GenericIndexer) CreateWatcher(root string) *Watcher {
-	return NewWatcher(root, indexer.Exclude, indexer.MaxFrequency)
+func (indexer *GenericIndexer) CreateWatcher(root string) Watcher {
+	return NewProjectWatcher(root, indexer.Exclude, indexer.MaxFrequency)
 }
 
 func (indexer *GenericIndexer) GetArguments(root string) []string {

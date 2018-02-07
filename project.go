@@ -9,10 +9,10 @@ import (
 type Project struct {
 	Path    string
 	Indexer Indexer
-	Watcher *Watcher
+	Watcher Watcher
 }
 
-func DefaultProject(indexer Indexer, watcher *Watcher) *Project {
+func DefaultProject(indexer Indexer, watcher Watcher) *Project {
 	return &Project{
 		Path:    ".",
 		Indexer: indexer,
@@ -25,7 +25,10 @@ func (project *Project) Monitor(ctx context.Context) {
 	go project.Index()
 	defer project.Watcher.Close()
 	wctx, cancel := context.WithCancel(ctx)
-	go project.Watcher.Watch(wctx)
+	// TODO: Rethink this type assertion
+	// should Watch be part of the interface?
+	// however, this would make FsWatcher incompatible
+	go project.Watcher.(*ProjectWatcher).Watch(wctx)
 	for {
 		select {
 		case <-project.Watcher.Events():

@@ -2,7 +2,7 @@ package main
 
 type Indexer interface {
 	Index(string)
-	CreateWatcher(string) *Watcher
+	CreateWatcher(string) Watcher
 }
 
 type IndexerType string
