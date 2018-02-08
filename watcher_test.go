@@ -16,15 +16,17 @@ type MockWatcher struct {
 	mock.Mock
 }
 
-// TODO: Write stub code here
 func (watcher *MockWatcher) Watch(ctx context.Context) {
+	watcher.Called(ctx)
 }
 
 func (watcher *MockWatcher) Events() chan struct{} {
-	return nil
+	args := watcher.Called()
+	return args.Get(0).(chan struct{})
 }
 
 func (watcher *MockWatcher) Close() {
+	watcher.Called()
 }
 
 func Test_ProjectWatcher_Watch_ShouldCallHandlerFunc_OnFsNotify_Event(t *testing.T) {
