@@ -43,9 +43,8 @@ func Test_Project_Monitor_WillCloseWatcher_OnContextCancellation(t *testing.T) {
 	watcher := &MockWatcher{}
 	indexer.On("Index", ".").Return()
 
-	events := make(chan struct{})
 	watcher.On("Watch", mock.AnythingOfType("*context.cancelCtx"))
-	watcher.On("Events").Return(events)
+	watcher.On("Events")
 	closed := make(chan struct{})
 	watcher.On("Close").Run(func(args mock.Arguments) { close(closed) })
 

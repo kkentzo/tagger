@@ -16,13 +16,25 @@ type MockWatcher struct {
 	mock.Mock
 }
 
+func CreateMockWatcher() *MockWatcher {
+	watcher := &MockWatcher{}
+	watcher.On("Watch", mock.AnythingOfType("*context.cancelCtx"))
+	watcher.On("Close")
+	watcher.On("Events")
+	return watcher
+}
+
 func (watcher *MockWatcher) Watch(ctx context.Context) {
 	watcher.Called(ctx)
 }
 
 func (watcher *MockWatcher) Events() chan struct{} {
 	args := watcher.Called()
-	return args.Get(0).(chan struct{})
+	if len(args) > 0 {
+		return args.Get(0).(chan struct{})
+	} else {
+		return make(chan struct{})
+	}
 }
 
 func (watcher *MockWatcher) Close() {
