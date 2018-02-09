@@ -10,7 +10,7 @@ import (
 
 type Indexable interface {
 	Index(string)
-	CreateWatcher(string) Watcher
+	CreateWatcher(string) Watchable
 }
 
 type IndexerType string
@@ -49,8 +49,8 @@ func (indexer *Indexer) Index(root string) {
 	}
 }
 
-func (indexer *Indexer) CreateWatcher(root string) Watcher {
-	return NewProjectWatcher(root, indexer.Exclude, indexer.MaxFrequency)
+func (indexer *Indexer) CreateWatcher(root string) Watchable {
+	return NewWatcher(root, indexer.Exclude, indexer.MaxFrequency)
 }
 
 func (indexer *Indexer) GetArguments(root string) []string {

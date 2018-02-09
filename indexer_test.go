@@ -19,9 +19,9 @@ func (indexer *MockIndexer) Index(root string) {
 	indexer.Called(root)
 }
 
-func (indexer *MockIndexer) CreateWatcher(root string) Watcher {
+func (indexer *MockIndexer) CreateWatcher(root string) Watchable {
 	args := indexer.Called(root)
-	return args.Get(0).(Watcher)
+	return args.Get(0).(Watchable)
 }
 
 func Test_Indexer_DefaultIndexer(t *testing.T) {
@@ -54,7 +54,7 @@ func Test_Indexer_CreateWatcher_ShouldReturnAWatcher(t *testing.T) {
 		Exclude:      []string{".git"},
 		MaxFrequency: 2 * time.Second,
 	}
-	watcher := indexer.CreateWatcher("foo").(*ProjectWatcher)
+	watcher := indexer.CreateWatcher("foo").(*Watcher)
 	defer watcher.Close()
 
 	assert.Equal(t, "foo", watcher.Root)

@@ -9,10 +9,10 @@ import (
 type Project struct {
 	Path    string
 	Indexer Indexable
-	Watcher Watcher
+	Watcher Watchable
 }
 
-func DefaultProject(indexer Indexable, watcher Watcher) *Project {
+func DefaultProject(indexer Indexable, watcher Watchable) *Project {
 	return &Project{
 		Path:    ".",
 		Indexer: indexer,

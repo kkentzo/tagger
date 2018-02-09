@@ -41,15 +41,15 @@ func (watcher *MockWatcher) Close() {
 	watcher.Called()
 }
 
-func Test_ProjectWatcher_Watch_ShouldCallHandlerFunc_OnFsNotify_Event(t *testing.T) {
+func Test_Watcher_Watch_ShouldCallHandlerFunc_OnFsNotify_Event(t *testing.T) {
 	t.Skip("Need to stub fswatcher")
 }
 
-func Test_ProjectWatcher_Watch_ShouldReindex_WhenTickerTicks(t *testing.T) {
+func Test_Watcher_Watch_ShouldReindex_WhenTickerTicks(t *testing.T) {
 	t.Skip("Need to stub fswatcher")
 }
 
-func Test_ProjectWatcher_Watch_ShouldNotReindex_WhenTagFileChanges(t *testing.T) {
+func Test_Watcher_Watch_ShouldNotReindex_WhenTagFileChanges(t *testing.T) {
 	t.Skip("Need to stub fswatcher")
 }
 

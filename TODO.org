@@ -25,12 +25,17 @@
 **** but doesn't this mean that we have to keep separate tags files (a-la guard)??
 ***** should/could we keep the TAG files in-memory?? too expensive?
 ***** perhaps introduce HOT projects?? (for in-memory processing)
-** introduce mock dependencies for testing manager, project, indexer
-** Adaptive indexing - Measure indexing time per project - adjust maxFrequency accordingly
+** DONE introduce mock dependencies for testing manager, project, indexer
+** DONE Revisit GenericIndexer naming
+*** a GenericIndexer includes a Type which can be Rvm => not good
+*** think about *able (instead of *er) naming pattern for interfaces
 ** test cleanups (Close() methods)
 ** Write README
+** Banners on README (go report, CI build, coverage)
 ** Advertise!! Publish!!
 ** Configure logger properly (timestamp, prefixes)
+* More advanced features
+** Adaptive indexing - Measure indexing time per project - adjust maxFrequency accordingly
 ** In-memory tag indexing and processing ???
 ** Change PathSet to PathTree for filesystem
 *** implement additions, removals, sub-tree pruning, search

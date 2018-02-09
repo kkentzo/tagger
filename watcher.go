@@ -13,7 +13,7 @@ import (
 
 var msg struct{}
 
-type Watcher interface {
+type Watchable interface {
 	Watch(context.Context)
 	Events() chan struct{}
 	Close()
@@ -21,7 +21,7 @@ type Watcher interface {
 
 type FsEventHandlerFunc func(fsnotify.Event, *fsnotify.Watcher, *PathSet) bool
 
-type ProjectWatcher struct {
+type Watcher struct {
 	Root         string
 	Exclusions   []string
 	MaxFrequency time.Duration
@@ -30,12 +30,12 @@ type ProjectWatcher struct {
 	events       chan struct{}
 }
 
-func NewProjectWatcher(root string, exclusions []string, maxFrequency time.Duration) *ProjectWatcher {
+func NewWatcher(root string, exclusions []string, maxFrequency time.Duration) *Watcher {
 	fsWatcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	return &ProjectWatcher{
+	return &Watcher{
 		Root:         root,
 		Exclusions:   exclusions,
 		MaxFrequency: maxFrequency,
@@ -45,16 +45,16 @@ func NewProjectWatcher(root string, exclusions []string, maxFrequency time.Durat
 	}
 }
 
-func (watcher *ProjectWatcher) Events() chan struct{} {
+func (watcher *Watcher) Events() chan struct{} {
 	return watcher.events
 }
 
-func (watcher *ProjectWatcher) Close() {
+func (watcher *Watcher) Close() {
 	close(watcher.events)
 	watcher.fsWatcher.Close()
 }
 
-func (watcher *ProjectWatcher) Watch(ctx context.Context) {
+func (watcher *Watcher) Watch(ctx context.Context) {
 	// create set of excluded stuff
 	exclusions := NewPathSet(watcher.Exclusions)
 
