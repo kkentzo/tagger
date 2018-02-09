@@ -13,12 +13,12 @@ type ProjectWithContext struct {
 }
 
 type Manager struct {
-	indexer  Indexer
+	indexer  Indexable
 	projects map[string]*ProjectWithContext
 	pg       sync.WaitGroup
 }
 
-func NewManager(indexer Indexer, projects []struct{ Path string }) *Manager {
+func NewManager(indexer Indexable, projects []struct{ Path string }) *Manager {
 	manager := &Manager{
 		indexer:  indexer,
 		projects: make(map[string]*ProjectWithContext),
