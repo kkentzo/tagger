@@ -27,11 +27,6 @@ func DefaultGenericIndexer() *GenericIndexer {
 	}
 }
 
-func (indexer *GenericIndexer) CreateProjectIndexer(other *GenericIndexer) Indexer {
-	// merge indexer into other and return the other
-	return nil
-}
-
 func (indexer *GenericIndexer) Index(root string) {
 	args := indexer.GetArguments(root)
 	cmd := exec.Command(indexer.Program, args...)
@@ -47,7 +42,10 @@ func (indexer *GenericIndexer) CreateWatcher(root string) Watcher {
 }
 
 func (indexer *GenericIndexer) GetArguments(root string) []string {
-	args := []string{fmt.Sprintf("-f %s", indexer.TagFile)}
+	var args []string
+	if indexer.TagFile != "" {
+		args = append(args, fmt.Sprintf("-f %s", indexer.TagFile))
+	}
 	// add user-requested arguments
 	args = append(args, indexer.Args...)
 	// add excluded paths
@@ -66,6 +64,7 @@ func (indexer *GenericIndexer) GetArguments(root string) []string {
 			log.Error("Can not determine gemset path for rvm project at ", root)
 		} else {
 			paths = append(paths, gemsetPath)
+			// TODO: should we append --languages=ruby here?
 		}
 	}
 	args = append(args, paths...)
