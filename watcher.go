@@ -19,28 +19,24 @@ type Watchable interface {
 	Close()
 }
 
-type FsEventHandlerFunc func(fsnotify.Event, *fsnotify.Watcher, *PathSet) bool
+type FsEventHandlerFunc func(fsnotify.Event, FsWatchable, *PathSet) bool
 
 type Watcher struct {
 	Root         string
 	Exclusions   []string
 	MaxFrequency time.Duration
 	HandlerFunc  FsEventHandlerFunc
-	fsWatcher    *fsnotify.Watcher
+	fsWatcher    FsWatchable
 	events       chan struct{}
 }
 
 func NewWatcher(root string, exclusions []string, maxFrequency time.Duration) *Watcher {
-	fsWatcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		log.Fatal(err.Error())
-	}
 	return &Watcher{
 		Root:         root,
 		Exclusions:   exclusions,
 		MaxFrequency: maxFrequency,
 		HandlerFunc:  handle,
-		fsWatcher:    fsWatcher,
+		fsWatcher:    NewFsWatcher(),
 		events:       make(chan struct{}),
 	}
 }
@@ -77,21 +73,21 @@ func (watcher *Watcher) Watch(ctx context.Context) {
 				watcher.events <- msg
 				mustReindex = false
 			}
-		case event := <-watcher.fsWatcher.Events:
+		case event := <-watcher.fsWatcher.Events():
 			// TODO: make TAGS a parameter
 			if filepath.Base(event.Name) == "TAGS" {
 				continue
 			}
 			mustReindex = mustReindex ||
 				watcher.HandlerFunc(event, watcher.fsWatcher, exclusions)
-		case err := <-watcher.fsWatcher.Errors:
+		case err := <-watcher.fsWatcher.Errors():
 			log.Error(err.Error())
 		}
 	}
 
 }
 
-func handle(event fsnotify.Event, fsWatcher *fsnotify.Watcher, excl *PathSet) bool {
+func handle(event fsnotify.Event, fsWatcher FsWatchable, excl *PathSet) bool {
 	log.Debugf("Event %s on %s", event.Op, event.Name)
 	if event.Op&fsnotify.Remove == fsnotify.Remove ||
 		event.Op&fsnotify.Rename == fsnotify.Rename {
@@ -113,7 +109,7 @@ func handle(event fsnotify.Event, fsWatcher *fsnotify.Watcher, excl *PathSet) bo
 	}
 }
 
-func add(path string, fsWatcher *fsnotify.Watcher, exclusions *PathSet) error {
+func add(path string, fsWatcher FsWatchable, exclusions *PathSet) error {
 	directories, err := discover(path, exclusions)
 	if err != nil {
 		return err
@@ -129,7 +125,7 @@ func add(path string, fsWatcher *fsnotify.Watcher, exclusions *PathSet) error {
 	return nil
 }
 
-func remove(path string, fsWatcher *fsnotify.Watcher) error {
+func remove(path string, fsWatcher FsWatchable) error {
 	fsWatcher.Remove(path)
 	log.Info("Removing", path)
 	return nil
