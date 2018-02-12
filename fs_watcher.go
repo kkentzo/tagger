@@ -29,15 +29,15 @@ func NewFsWatcher() *FsWatcher {
 }
 
 func (watcher *FsWatcher) Add(path string) error {
-	return watcher.Add(path)
+	return watcher.watcher.Add(path)
 }
 
 func (watcher *FsWatcher) Remove(path string) error {
-	return watcher.Remove(path)
+	return watcher.watcher.Remove(path)
 }
 
 func (watcher *FsWatcher) Close() error {
-	return watcher.Close()
+	return watcher.watcher.Close()
 }
 
 func (watcher *FsWatcher) Events() chan fsnotify.Event {

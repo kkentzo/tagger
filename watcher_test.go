@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/stretchr/testify/assert"
@@ -41,8 +42,40 @@ func (watcher *MockWatcher) Close() {
 	watcher.Called()
 }
 
+func Test_NewWatcher(t *testing.T) {
+	watcher := NewWatcher("foo", []string{"excl"}, 2*time.Second)
+	defer watcher.Close()
+	assert.Equal(t, "foo", watcher.Root)
+	assert.Contains(t, watcher.Exclusions, "excl")
+	assert.Equal(t, 2*time.Second, watcher.MaxFrequency)
+	assert.IsType(t, &FsWatcher{}, watcher.fsWatcher)
+	assert.IsType(t, make(chan struct{}), watcher.events)
+}
+
+func Test_Watcher_Events_ReturnsTheChannel(t *testing.T) {
+	watcher := NewWatcher("foo", []string{"excl"}, 2*time.Second)
+	defer watcher.Close()
+	var s struct{}
+	go func(w *Watcher) { watcher.Events() <- s }(watcher)
+	assert.Equal(t, s, <-watcher.Events())
+}
+
+func Test_Watcher_Close_ClosesTheChannels(t *testing.T) {
+	watcher := NewWatcher("foo", []string{"excl"}, 2*time.Second)
+	watcher.Close()
+	_, open := <-watcher.Events()
+	assert.False(t, open)
+	_, open = <-watcher.fsWatcher.Events()
+	assert.False(t, open)
+}
+
 func Test_Watcher_Watch_ShouldCallHandlerFunc_OnFsNotify_Event(t *testing.T) {
-	t.Skip("Need to stub fswatcher")
+	// create and setup the filesystem watcher
+	events := make(chan fsnotify.Event)
+	fsWatcher := &MockFsWatcher{}
+	fsWatcher.On("Events").Return(events)
+	// substitute the HandlerFunc of the MockWatcher
+
 }
 
 func Test_Watcher_Watch_ShouldReindex_WhenTickerTicks(t *testing.T) {
@@ -51,188 +84,6 @@ func Test_Watcher_Watch_ShouldReindex_WhenTickerTicks(t *testing.T) {
 
 func Test_Watcher_Watch_ShouldNotReindex_WhenTagFileChanges(t *testing.T) {
 	t.Skip("Need to stub fswatcher")
-}
-
-func Test_handle_ReturnsTrue_OnFileCreation(t *testing.T) {
-	// create the project directory
-	path, err := ioutil.TempDir("", "tagger-tests")
-	assert.Nil(t, err)
-	defer os.RemoveAll(path)
-
-	// create and setup the filesystem watcher
-	fsWatcher, err := fsnotify.NewWatcher()
-	assert.Nil(t, err)
-	defer fsWatcher.Close()
-	err = fsWatcher.Add(path)
-	assert.Nil(t, err)
-	// create the PathSet
-	pathSet := NewPathSet([]string{})
-
-	// fire!
-	TouchFile(t, filepath.Join(path, "test_file")).Close()
-
-	event := <-fsWatcher.Events
-	assert.True(t, handle(event, fsWatcher, pathSet))
-}
-
-func Test_handle_ReturnsTrue_OnFileChange(t *testing.T) {
-	// create the project directory
-	path, err := ioutil.TempDir("", "tagger-tests")
-	assert.Nil(t, err)
-	defer os.RemoveAll(path)
-
-	file := TouchFile(t, filepath.Join(path, "test_file"))
-	defer file.Close()
-
-	// create and setup the filesystem watcher
-	fsWatcher, err := fsnotify.NewWatcher()
-	assert.Nil(t, err)
-	defer fsWatcher.Close()
-	err = fsWatcher.Add(path)
-	assert.Nil(t, err)
-	// create the PathSet
-	pathSet := NewPathSet([]string{})
-
-	// fire!
-	file.WriteString("hello")
-
-	event := <-fsWatcher.Events
-	assert.True(t, handle(event, fsWatcher, pathSet))
-}
-
-func Test_handle_ReturnsTrue_OnFileDeletion(t *testing.T) {
-	// create the project directory
-	path, err := ioutil.TempDir("", "tagger-tests")
-	assert.Nil(t, err)
-	defer os.RemoveAll(path)
-
-	fname := filepath.Join(path, "test_file")
-	TouchFile(t, fname).Close()
-
-	// create and setup the filesystem watcher
-	fsWatcher, err := fsnotify.NewWatcher()
-	assert.Nil(t, err)
-	defer fsWatcher.Close()
-	err = fsWatcher.Add(path)
-	assert.Nil(t, err)
-	// create the PathSet
-	pathSet := NewPathSet([]string{})
-
-	// fire!
-	os.Remove(fname)
-
-	event := <-fsWatcher.Events
-	assert.True(t, handle(event, fsWatcher, pathSet))
-}
-
-func Test_handle_ReturnsTrue_OnFileRename(t *testing.T) {
-	// create the project directory
-	path, err := ioutil.TempDir("", "tagger-tests")
-	assert.Nil(t, err)
-	defer os.RemoveAll(path)
-
-	fname := filepath.Join(path, "test_file")
-	TouchFile(t, fname).Close()
-
-	// create and setup the filesystem watcher
-	fsWatcher, err := fsnotify.NewWatcher()
-	assert.Nil(t, err)
-	// TODO: the following cleanup statement hangs on macOS (test linux)
-	// see fsnotify: kqueue.go#Close()
-	//defer fsWatcher.Close()
-	err = fsWatcher.Add(path)
-	assert.Nil(t, err)
-	// create the PathSet
-	pathSet := NewPathSet([]string{})
-
-	// fire!
-	new_fname := filepath.Join(path, "test_file_new")
-	err = os.Rename(fname, new_fname)
-	assert.Nil(t, err)
-
-	event := <-fsWatcher.Events
-	assert.True(t, handle(event, fsWatcher, pathSet))
-}
-
-func Test_handle_ReturnTrue_OnDirectoryCreation(t *testing.T) {
-	// create the project directory
-	path, err := ioutil.TempDir("", "tagger-tests")
-	assert.Nil(t, err)
-	defer os.RemoveAll(path)
-
-	// create and setup the filesystem watcher
-	fsWatcher, err := fsnotify.NewWatcher()
-	assert.Nil(t, err)
-	defer fsWatcher.Close()
-	err = fsWatcher.Add(path)
-	assert.Nil(t, err)
-	// create the PathSet
-	pathSet := NewPathSet([]string{})
-
-	// fire!
-	err = os.Mkdir(filepath.Join(path, "test_dir"), os.ModePerm)
-	assert.Nil(t, err)
-
-	event := <-fsWatcher.Events
-	assert.True(t, handle(event, fsWatcher, pathSet))
-}
-
-func Test_handle_ReturnTrue_OnDirectoryDeletion(t *testing.T) {
-	// create the project directory
-	path, err := ioutil.TempDir("", "tagger-tests")
-	assert.Nil(t, err)
-	defer os.RemoveAll(path)
-
-	dirName := filepath.Join(path, "test_dir")
-	err = os.Mkdir(dirName, os.ModePerm)
-	assert.Nil(t, err)
-
-	// create and setup the filesystem watcher
-	fsWatcher, err := fsnotify.NewWatcher()
-	assert.Nil(t, err)
-	defer fsWatcher.Close()
-	err = fsWatcher.Add(path)
-	assert.Nil(t, err)
-	// create the PathSet
-	pathSet := NewPathSet([]string{})
-
-	// fire!
-	err = os.RemoveAll(dirName)
-	assert.Nil(t, err)
-
-	event := <-fsWatcher.Events
-	assert.True(t, handle(event, fsWatcher, pathSet))
-}
-
-func Test_handle_ReturnTrue_OnDirectoryRename(t *testing.T) {
-	// create the project directory
-	path, err := ioutil.TempDir("", "tagger-tests")
-	assert.Nil(t, err)
-	defer os.RemoveAll(path)
-
-	dirName := filepath.Join(path, "test_dir")
-	err = os.Mkdir(dirName, os.ModePerm)
-	assert.Nil(t, err)
-
-	// create and setup the filesystem watcher
-	fsWatcher, err := fsnotify.NewWatcher()
-	assert.Nil(t, err)
-	err = fsWatcher.Add(path)
-	// TODO: the following cleanup statement hangs on macOS (test linux)
-	// see fsnotify: kqueue.go#Close()
-	//defer fsWatcher.Close()
-	assert.Nil(t, err)
-	// create the PathSet
-	pathSet := NewPathSet([]string{})
-
-	// fire!
-	newDirName := dirName + "_new"
-	err = os.Rename(dirName, newDirName)
-	assert.Nil(t, err)
-	os.RemoveAll(newDirName)
-
-	event := <-fsWatcher.Events
-	assert.True(t, handle(event, fsWatcher, pathSet))
 }
 
 func Test_discover_IncludesAllDirectoriesUnderRoot(t *testing.T) {

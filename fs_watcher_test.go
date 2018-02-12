@@ -8,7 +8,37 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
+
+type MockFsWatcher struct {
+	mock.Mock
+}
+
+func (w *MockFsWatcher) Add(path string) error {
+	args := w.Called(path)
+	return args.Get(0).(error)
+}
+
+func (w *MockFsWatcher) Remove(path string) error {
+	args := w.Called(path)
+	return args.Get(0).(error)
+}
+
+func (w *MockFsWatcher) Close() error {
+	args := w.Called()
+	return args.Get(0).(error)
+}
+
+func (w *MockFsWatcher) Events() chan fsnotify.Event {
+	args := w.Called()
+	return args.Get(0).(chan fsnotify.Event)
+}
+
+func (w *MockFsWatcher) Errors() chan error {
+	args := w.Called()
+	return args.Get(0).(chan error)
+}
 
 // These functions test the functionality of fsnotify.Watcher
 
