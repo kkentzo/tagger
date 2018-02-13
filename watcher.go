@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"os"
 	"path/filepath"
 	"time"
 
@@ -19,11 +18,10 @@ type Watchable interface {
 	Close()
 }
 
-type FsEventHandlerFunc func(fsnotify.Event, FsWatchable, *PathSet) bool
+type FsEventHandlerFunc func(FsWatchable, fsnotify.Event) bool
 
 type Watcher struct {
 	Root         string
-	Exclusions   []string
 	MaxFrequency time.Duration
 	HandlerFunc  FsEventHandlerFunc
 	fsWatcher    FsWatchable
@@ -33,10 +31,9 @@ type Watcher struct {
 func NewWatcher(root string, exclusions []string, maxFrequency time.Duration) *Watcher {
 	return &Watcher{
 		Root:         root,
-		Exclusions:   exclusions,
 		MaxFrequency: maxFrequency,
 		HandlerFunc:  handle,
-		fsWatcher:    NewFsWatcher(),
+		fsWatcher:    NewFsWatcher(exclusions),
 		events:       make(chan struct{}),
 	}
 }
@@ -51,11 +48,9 @@ func (watcher *Watcher) Close() {
 }
 
 func (watcher *Watcher) Watch(ctx context.Context) {
-	// create set of excluded stuff
-	exclusions := NewPathSet(watcher.Exclusions)
-
 	// add project files
-	add(watcher.Root, watcher.fsWatcher, exclusions)
+	// TODO: handle error
+	watcher.fsWatcher.Add(watcher.Root)
 
 	log.Info("Watching ", watcher.Root)
 	// start monitoring
@@ -79,7 +74,7 @@ func (watcher *Watcher) Watch(ctx context.Context) {
 				continue
 			}
 			mustReindex = mustReindex ||
-				watcher.HandlerFunc(event, watcher.fsWatcher, exclusions)
+				watcher.HandlerFunc(watcher.fsWatcher, event)
 		case err := <-watcher.fsWatcher.Errors():
 			log.Error(err.Error())
 		}
@@ -87,76 +82,6 @@ func (watcher *Watcher) Watch(ctx context.Context) {
 
 }
 
-func handle(event fsnotify.Event, fsWatcher FsWatchable, excl *PathSet) bool {
-	log.Debugf("Event %s on %s", event.Op, event.Name)
-	if event.Op&fsnotify.Remove == fsnotify.Remove ||
-		event.Op&fsnotify.Rename == fsnotify.Rename {
-		remove(event.Name, fsWatcher) // this is non-recursive...
-		return true
-	} else if event.Op&fsnotify.Create == fsnotify.Create ||
-		event.Op&fsnotify.Write == fsnotify.Write {
-		if isDir, err := isDirectory(event.Name); err != nil {
-			log.Error(err.Error())
-			return false
-		} else if isDir {
-			add(event.Name, fsWatcher, excl)
-		}
-		return true
-	} else if event.Op&fsnotify.Chmod == fsnotify.Chmod {
-		return false
-	} else {
-		return true
-	}
-}
-
-func add(path string, fsWatcher FsWatchable, exclusions *PathSet) error {
-	directories, err := discover(path, exclusions)
-	if err != nil {
-		return err
-	}
-	for _, file := range directories {
-		err := fsWatcher.Add(file)
-		if err != nil {
-			// TODO: This raises a "Too many files open" on MacOS
-			log.Error(err.Error())
-		}
-		log.Debug("Adding", file)
-	}
-	return nil
-}
-
-func remove(path string, fsWatcher FsWatchable) error {
-	fsWatcher.Remove(path)
-	log.Info("Removing", path)
-	return nil
-}
-
-// return a slice with all directories under root but the excluded ones
-func discover(root string, exclusions *PathSet) ([]string, error) {
-	var directories []string
-	err := filepath.Walk(root,
-		func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if info.IsDir() {
-				if exclusions.Has(info.Name()) {
-					return filepath.SkipDir
-				} else {
-					directories = append(directories, path)
-					return nil
-				}
-			}
-			return nil
-		})
-	return directories, err
-}
-
-func isDirectory(path string) (bool, error) {
-	fileInfo, err := os.Stat(path)
-	if err != nil {
-		return false, err
-	}
-
-	return fileInfo.IsDir(), nil
+func handle(fsWatcher FsWatchable, event fsnotify.Event) bool {
+	return fsWatcher.Handle(event)
 }

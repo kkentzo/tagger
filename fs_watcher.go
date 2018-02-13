@@ -3,12 +3,16 @@ package main
 // encapsulates fsnotify.Watcher
 
 import (
+	"os"
+	"path/filepath"
+
 	"github.com/fsnotify/fsnotify"
 
 	log "github.com/sirupsen/logrus"
 )
 
 type FsWatchable interface {
+	Handle(fsnotify.Event) bool
 	Add(string) error
 	Remove(string) error
 	Events() chan fsnotify.Event
@@ -16,24 +20,69 @@ type FsWatchable interface {
 	Close() error
 }
 
+// TODO: Use struct embedding for watcher
 type FsWatcher struct {
-	watcher *fsnotify.Watcher
+	watcher    *fsnotify.Watcher
+	exclusions *PathSet
 }
 
-func NewFsWatcher() *FsWatcher {
+func NewFsWatcher(exclusions []string) *FsWatcher {
 	w, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal("Failed to initialize filesystem watcher")
 	}
-	return &FsWatcher{watcher: w}
+	return &FsWatcher{
+		watcher:    w,
+		exclusions: NewPathSet(exclusions),
+	}
+}
+
+func (watcher *FsWatcher) Handle(event fsnotify.Event) bool {
+	log.Debugf("Event %s on %s", event.Op, event.Name)
+	if event.Op&fsnotify.Remove == fsnotify.Remove ||
+		event.Op&fsnotify.Rename == fsnotify.Rename {
+		watcher.Remove(event.Name) // this is non-recursive...
+		return true
+	} else if event.Op&fsnotify.Create == fsnotify.Create ||
+		event.Op&fsnotify.Write == fsnotify.Write {
+		if isDir, err := IsDirectory(event.Name); err != nil {
+			log.Error(err.Error())
+			return false
+		} else if isDir {
+			err = watcher.Add(event.Name)
+			if err != nil {
+				// TODO: This raises a "Too many files open" on MacOS
+				log.Error(err.Error())
+				return false
+			}
+		}
+		return true
+	} else if event.Op&fsnotify.Chmod == fsnotify.Chmod {
+		return false
+	} else {
+		return true
+	}
 }
 
 func (watcher *FsWatcher) Add(path string) error {
-	return watcher.watcher.Add(path)
+	directories, err := discover(path, watcher.exclusions)
+	if err != nil {
+		return err
+	}
+	for _, file := range directories {
+		err := watcher.watcher.Add(file)
+		if err != nil {
+			log.Error(err.Error())
+		}
+		log.Debug("Adding", file)
+	}
+	return nil
 }
 
 func (watcher *FsWatcher) Remove(path string) error {
-	return watcher.watcher.Remove(path)
+	watcher.watcher.Remove(path)
+	log.Info("Removing", path)
+	return nil
 }
 
 func (watcher *FsWatcher) Close() error {
@@ -46,4 +95,25 @@ func (watcher *FsWatcher) Events() chan fsnotify.Event {
 
 func (watcher *FsWatcher) Errors() chan error {
 	return watcher.watcher.Errors
+}
+
+// return a slice with all directories under root but the excluded ones
+func discover(root string, exclusions *PathSet) ([]string, error) {
+	var directories []string
+	err := filepath.Walk(root,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if info.IsDir() {
+				if exclusions.Has(info.Name()) {
+					return filepath.SkipDir
+				} else {
+					directories = append(directories, path)
+					return nil
+				}
+			}
+			return nil
+		})
+	return directories, err
 }

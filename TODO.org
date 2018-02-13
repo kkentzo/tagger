@@ -29,6 +29,11 @@
 ** DONE Revisit GenericIndexer naming
 *** a GenericIndexer includes a Type which can be Rvm => not good
 *** think about *able (instead of *er) naming pattern for interfaces
+** TODO Work on Watcher tests
+*** DONE Move add, remove (and pathset field) to FsWatcher
+*** Test these ^^^
+*** DONE Move discover to FsWatcher (as a func)
+*** Test Watcher#Watch by mocking FsWatcher
 ** test cleanups (Close() methods)
 ** Write README
 ** Banners on README (go report, CI build, coverage)

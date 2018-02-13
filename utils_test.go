@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -37,4 +39,29 @@ func Test_Canonicalize(t *testing.T) {
 	for _, testCase := range testCases {
 		assert.Equal(t, testCase.expandedPath, Canonicalize(testCase.path))
 	}
+}
+
+func Test_IsDirectory_ReturnsTrue_WhenPathIsDirectory(t *testing.T) {
+	// create the project directory
+	path, err := ioutil.TempDir("", "tagger-tests")
+	assert.Nil(t, err)
+	defer os.RemoveAll(path)
+
+	result, err := IsDirectory(path)
+	assert.True(t, result)
+	assert.Nil(t, err)
+}
+
+func Test_IsDirectory_ReturnsFalse_WhenPathIsFile(t *testing.T) {
+	// create the project directory
+	path, err := ioutil.TempDir("", "tagger-tests")
+	assert.Nil(t, err)
+	defer os.RemoveAll(path)
+
+	fname := filepath.Join(path, "test_file")
+	TouchFile(t, fname).Close()
+
+	result, err := IsDirectory(fname)
+	assert.False(t, result)
+	assert.Nil(t, err)
 }

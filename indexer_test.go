@@ -58,7 +58,6 @@ func Test_Indexer_CreateWatcher_ShouldReturnAWatcher(t *testing.T) {
 	defer watcher.Close()
 
 	assert.Equal(t, "foo", watcher.Root)
-	assert.Contains(t, watcher.Exclusions, ".git")
 	assert.Equal(t, 2*time.Second, watcher.MaxFrequency)
 }
 
