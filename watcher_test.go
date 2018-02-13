@@ -65,19 +65,55 @@ func Test_Watcher_Close_ClosesTheChannels(t *testing.T) {
 	assert.False(t, open)
 }
 
-func Test_Watcher_Watch_ShouldCallHandlerFunc_OnFsNotify_Event(t *testing.T) {
-	// create and setup the filesystem watcher
-	events := make(chan fsnotify.Event)
+func Test_Watcher_Watch_ShouldCallHandler_OnFsNotify_Event(t *testing.T) {
 	fsWatcher := &MockFsWatcher{}
+	events := make(chan fsnotify.Event)
 	fsWatcher.On("Events").Return(events)
-	// substitute the HandlerFunc of the MockWatcher
+	fsWatcher.On("Errors").Return(make(chan error))
+	fsWatcher.On("Add", "foo").Return(nil)
 
+	watcher := NewWatcher("foo", []string{}, 2*time.Second)
+	watcher.fsWatcher = fsWatcher
+
+	e := fsnotify.Event{
+		Name: "foo",
+		Op:   fsnotify.Create,
+	}
+	fired := make(chan fsnotify.Event)
+	fsWatcher.
+		On("Handle", mock.AnythingOfType("fsnotify.Event")).
+		Return(true).
+		Run(func(args mock.Arguments) {
+			fired <- e
+		})
+
+	go watcher.Watch(context.Background())
+	// fire the filesystem event
+	events <- e
+	// expectation
+	assert.Equal(t, e, <-fired)
 }
 
 func Test_Watcher_Watch_ShouldReindex_WhenTickerTicks(t *testing.T) {
-	t.Skip("Need to stub fswatcher")
-}
+	fsWatcher := &MockFsWatcher{}
+	events := make(chan fsnotify.Event)
+	fsWatcher.On("Events").Return(events)
+	fsWatcher.On("Errors").Return(make(chan error))
+	fsWatcher.On("Add", "foo").Return(nil)
 
-func Test_Watcher_Watch_ShouldNotReindex_WhenTagFileChanges(t *testing.T) {
-	t.Skip("Need to stub fswatcher")
+	watcher := NewWatcher("foo", []string{}, 10*time.Millisecond)
+	watcher.fsWatcher = fsWatcher
+
+	e := fsnotify.Event{
+		Name: "foo",
+		Op:   fsnotify.Create,
+	}
+	fsWatcher.On("Handle", mock.AnythingOfType("fsnotify.Event")).Return(true)
+
+	go watcher.Watch(context.Background())
+	// fire the filesystem event
+	events <- e
+	// expectation
+	var msg struct{}
+	assert.Equal(t, msg, <-watcher.events)
 }

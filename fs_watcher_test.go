@@ -15,9 +15,19 @@ type MockFsWatcher struct {
 	mock.Mock
 }
 
+func (w *MockFsWatcher) Handle(e fsnotify.Event) bool {
+	args := w.Called(e)
+	return args.Get(0).(bool)
+}
+
 func (w *MockFsWatcher) Add(path string) error {
 	args := w.Called(path)
-	return args.Get(0).(error)
+	obj := args.Get(0)
+	if obj != nil {
+		return obj.(error)
+	} else {
+		return nil
+	}
 }
 
 func (w *MockFsWatcher) Remove(path string) error {

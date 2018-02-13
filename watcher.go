@@ -6,8 +6,6 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-
-	"github.com/fsnotify/fsnotify"
 )
 
 var msg struct{}
@@ -18,12 +16,9 @@ type Watchable interface {
 	Close()
 }
 
-type FsEventHandlerFunc func(FsWatchable, fsnotify.Event) bool
-
 type Watcher struct {
 	Root         string
 	MaxFrequency time.Duration
-	HandlerFunc  FsEventHandlerFunc
 	fsWatcher    FsWatchable
 	events       chan struct{}
 }
@@ -32,7 +27,6 @@ func NewWatcher(root string, exclusions []string, maxFrequency time.Duration) *W
 	return &Watcher{
 		Root:         root,
 		MaxFrequency: maxFrequency,
-		HandlerFunc:  handle,
 		fsWatcher:    NewFsWatcher(exclusions),
 		events:       make(chan struct{}),
 	}
@@ -74,14 +68,10 @@ func (watcher *Watcher) Watch(ctx context.Context) {
 				continue
 			}
 			mustReindex = mustReindex ||
-				watcher.HandlerFunc(watcher.fsWatcher, event)
+				watcher.fsWatcher.Handle(event)
 		case err := <-watcher.fsWatcher.Errors():
 			log.Error(err.Error())
 		}
 	}
 
-}
-
-func handle(fsWatcher FsWatchable, event fsnotify.Event) bool {
-	return fsWatcher.Handle(event)
 }
