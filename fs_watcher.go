@@ -20,9 +20,8 @@ type FsWatchable interface {
 	Close() error
 }
 
-// TODO: Use struct embedding for watcher
 type FsWatcher struct {
-	watcher    *fsnotify.Watcher
+	*fsnotify.Watcher
 	exclusions *PathSet
 }
 
@@ -32,7 +31,7 @@ func NewFsWatcher(exclusions []string) *FsWatcher {
 		log.Fatal("Failed to initialize filesystem watcher")
 	}
 	return &FsWatcher{
-		watcher:    w,
+		Watcher:    w,
 		exclusions: NewPathSet(exclusions),
 	}
 }
@@ -70,7 +69,7 @@ func (watcher *FsWatcher) Add(path string) error {
 		return err
 	}
 	for _, file := range directories {
-		err := watcher.watcher.Add(file)
+		err := watcher.Watcher.Add(file)
 		if err != nil {
 			log.Error(err.Error())
 		}
@@ -79,22 +78,12 @@ func (watcher *FsWatcher) Add(path string) error {
 	return nil
 }
 
-func (watcher *FsWatcher) Remove(path string) error {
-	watcher.watcher.Remove(path)
-	log.Info("Removing", path)
-	return nil
-}
-
-func (watcher *FsWatcher) Close() error {
-	return watcher.watcher.Close()
-}
-
 func (watcher *FsWatcher) Events() chan fsnotify.Event {
-	return watcher.watcher.Events
+	return watcher.Watcher.Events
 }
 
 func (watcher *FsWatcher) Errors() chan error {
-	return watcher.watcher.Errors
+	return watcher.Watcher.Errors
 }
 
 // return a slice with all directories under root but the excluded ones
