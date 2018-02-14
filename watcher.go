@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"path/filepath"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -62,10 +61,6 @@ func (watcher *Watcher) Watch(ctx context.Context) {
 				mustReindex = false
 			}
 		case event := <-watcher.fsWatcher.Events():
-			// TODO: make TAGS a parameter
-			if filepath.Base(event.Name) == "TAGS" {
-				continue
-			}
 			mustReindex = mustReindex ||
 				watcher.fsWatcher.Handle(event)
 		case err := <-watcher.fsWatcher.Errors():

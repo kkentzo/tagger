@@ -198,6 +198,15 @@ func Test_FsWatcher_Add_OnDirectoryRename(t *testing.T) {
 	assert.NotNil(t, <-watcher.Events())
 }
 
+func Test_FsWatcher_Handle_ReturnsFalse_OnFileTAGS(t *testing.T) {
+	watcher := NewFsWatcher([]string{})
+	e := fsnotify.Event{
+		Op:   fsnotify.Create,
+		Name: "TAGS",
+	}
+	assert.False(t, watcher.Handle(e))
+}
+
 func Test_FsWatcher_Handle_ReturnsTrue_OnRemoveOrRename(t *testing.T) {
 	watcher := NewFsWatcher([]string{})
 	events := []fsnotify.Event{

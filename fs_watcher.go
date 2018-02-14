@@ -37,6 +37,10 @@ func NewFsWatcher(exclusions []string) *FsWatcher {
 }
 
 func (watcher *FsWatcher) Handle(event fsnotify.Event) bool {
+	// TODO: make TAGS a parameter
+	if filepath.Base(event.Name) == "TAGS" {
+		return false
+	}
 	log.Debugf("Event %s on %s", event.Op, event.Name)
 	if event.Op&fsnotify.Remove == fsnotify.Remove ||
 		event.Op&fsnotify.Rename == fsnotify.Rename {
