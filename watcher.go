@@ -43,7 +43,6 @@ func (watcher *Watcher) Close() {
 
 func (watcher *Watcher) Watch(ctx context.Context) {
 	// add project files
-	// TODO: handle error
 	watcher.fsWatcher.Add(watcher.Root)
 
 	log.Info("Watching ", watcher.Root)

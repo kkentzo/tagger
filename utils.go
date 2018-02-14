@@ -14,7 +14,6 @@ func Canonicalize(path string) string {
 }
 
 func FileExists(path string) bool {
-	// TODO: check for err value notexists
 	_, err := os.Stat(path)
 	return err == nil || !os.IsNotExist(err)
 }
