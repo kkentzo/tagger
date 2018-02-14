@@ -51,27 +51,24 @@ func (w *MockFsWatcher) Errors() chan error {
 }
 
 // These functions test the functionality of fsnotify.Watcher
-
-func Test_FsWatcher_Fires_OnFileCreation(t *testing.T) {
+func Test_FsWatcher_Add_OnFileCreation(t *testing.T) {
 	// create the project directory
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
 	defer os.RemoveAll(path)
 
-	// create and setup the filesystem watcher
-	fsWatcher, err := fsnotify.NewWatcher()
-	assert.Nil(t, err)
-	defer fsWatcher.Close()
-	err = fsWatcher.Add(path)
+	watcher := NewFsWatcher([]string{})
+	defer watcher.Close()
+	err = watcher.Add(path)
 	assert.Nil(t, err)
 
 	// fire!
 	TouchFile(t, filepath.Join(path, "test_file")).Close()
 
-	assert.NotNil(t, <-fsWatcher.Events)
+	assert.NotNil(t, <-watcher.Events())
 }
 
-func Test_FsWatcher_Fires_OnFileChange(t *testing.T) {
+func Test_FsWatcher_Add_OnFileChange(t *testing.T) {
 	// create the project directory
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
@@ -80,20 +77,18 @@ func Test_FsWatcher_Fires_OnFileChange(t *testing.T) {
 	file := TouchFile(t, filepath.Join(path, "test_file"))
 	defer file.Close()
 
-	// create and setup the filesystem watcher
-	fsWatcher, err := fsnotify.NewWatcher()
-	assert.Nil(t, err)
-	defer fsWatcher.Close()
-	err = fsWatcher.Add(path)
+	watcher := NewFsWatcher([]string{})
+	defer watcher.Close()
+	err = watcher.Add(path)
 	assert.Nil(t, err)
 
 	// fire!
 	file.WriteString("hello")
 
-	assert.NotNil(t, <-fsWatcher.Events)
+	assert.NotNil(t, <-watcher.Events())
 }
 
-func Test_FsWatcher_Fires_OnFileDeletion(t *testing.T) {
+func Test_FsWatcher_Add_OnFileDeletion(t *testing.T) {
 	// create the project directory
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
@@ -102,20 +97,18 @@ func Test_FsWatcher_Fires_OnFileDeletion(t *testing.T) {
 	fname := filepath.Join(path, "test_file")
 	TouchFile(t, fname).Close()
 
-	// create and setup the filesystem watcher
-	fsWatcher, err := fsnotify.NewWatcher()
-	assert.Nil(t, err)
-	defer fsWatcher.Close()
-	err = fsWatcher.Add(path)
+	watcher := NewFsWatcher([]string{})
+	defer watcher.Close()
+	err = watcher.Add(path)
 	assert.Nil(t, err)
 
 	// fire!
 	os.Remove(fname)
 
-	assert.NotNil(t, <-fsWatcher.Events)
+	assert.NotNil(t, <-watcher.Events())
 }
 
-func Test_FsWatcher_Fires_OnFileRename(t *testing.T) {
+func Test_FsWatcher_Add_OnFileRename(t *testing.T) {
 	// create the project directory
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
@@ -124,13 +117,11 @@ func Test_FsWatcher_Fires_OnFileRename(t *testing.T) {
 	fname := filepath.Join(path, "test_file")
 	TouchFile(t, fname).Close()
 
-	// create and setup the filesystem watcher
-	fsWatcher, err := fsnotify.NewWatcher()
-	assert.Nil(t, err)
+	watcher := NewFsWatcher([]string{})
 	// TODO: the following cleanup statement hangs on macOS (test linux)
 	// see fsnotify: kqueue.go#Close()
 	//defer fsWatcher.Close()
-	err = fsWatcher.Add(path)
+	err = watcher.Add(path)
 	assert.Nil(t, err)
 
 	// fire!
@@ -138,30 +129,28 @@ func Test_FsWatcher_Fires_OnFileRename(t *testing.T) {
 	err = os.Rename(fname, new_fname)
 	assert.Nil(t, err)
 
-	assert.NotNil(t, <-fsWatcher.Events)
+	assert.NotNil(t, <-watcher.Events())
 }
 
-func Test_FsWatcher_Fires_OnDirectoryCreation(t *testing.T) {
+func Test_FsWatcher_Add_OnDirectoryCreation(t *testing.T) {
 	// create the project directory
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
 	defer os.RemoveAll(path)
 
-	// create and setup the filesystem watcher
-	fsWatcher, err := fsnotify.NewWatcher()
-	assert.Nil(t, err)
-	defer fsWatcher.Close()
-	err = fsWatcher.Add(path)
+	watcher := NewFsWatcher([]string{})
+	defer watcher.Close()
+	err = watcher.Add(path)
 	assert.Nil(t, err)
 
 	// fire!
 	err = os.Mkdir(filepath.Join(path, "test_dir"), os.ModePerm)
 	assert.Nil(t, err)
 
-	assert.NotNil(t, <-fsWatcher.Events)
+	assert.NotNil(t, <-watcher.Events())
 }
 
-func Test_FsWatcher_Fires_OnDirectoryDeletion(t *testing.T) {
+func Test_FsWatcher_Add_OnDirectoryDeletion(t *testing.T) {
 	// create the project directory
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
@@ -171,21 +160,19 @@ func Test_FsWatcher_Fires_OnDirectoryDeletion(t *testing.T) {
 	err = os.Mkdir(dirName, os.ModePerm)
 	assert.Nil(t, err)
 
-	// create and setup the filesystem watcher
-	fsWatcher, err := fsnotify.NewWatcher()
-	assert.Nil(t, err)
-	defer fsWatcher.Close()
-	err = fsWatcher.Add(path)
+	watcher := NewFsWatcher([]string{})
+	defer watcher.Close()
+	err = watcher.Add(path)
 	assert.Nil(t, err)
 
 	// fire!
 	err = os.RemoveAll(dirName)
 	assert.Nil(t, err)
 
-	assert.NotNil(t, <-fsWatcher.Events)
+	assert.NotNil(t, <-watcher.Events())
 }
 
-func Test_FsWatcher_Fires_OnDirectoryRename(t *testing.T) {
+func Test_FsWatcher_Add_OnDirectoryRename(t *testing.T) {
 	// create the project directory
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
@@ -195,10 +182,8 @@ func Test_FsWatcher_Fires_OnDirectoryRename(t *testing.T) {
 	err = os.Mkdir(dirName, os.ModePerm)
 	assert.Nil(t, err)
 
-	// create and setup the filesystem watcher
-	fsWatcher, err := fsnotify.NewWatcher()
-	assert.Nil(t, err)
-	err = fsWatcher.Add(path)
+	watcher := NewFsWatcher([]string{})
+	err = watcher.Add(path)
 	// TODO: the following cleanup statement hangs on macOS (test linux)
 	// see fsnotify: kqueue.go#Close()
 	//defer fsWatcher.Close()
@@ -210,7 +195,55 @@ func Test_FsWatcher_Fires_OnDirectoryRename(t *testing.T) {
 	assert.Nil(t, err)
 	os.RemoveAll(newDirName)
 
-	assert.NotNil(t, <-fsWatcher.Events)
+	assert.NotNil(t, <-watcher.Events())
+}
+
+func Test_FsWatcher_Handle_ReturnsTrue_OnRemoveOrRename(t *testing.T) {
+	watcher := NewFsWatcher([]string{})
+	events := []fsnotify.Event{
+		fsnotify.Event{
+			Op:   fsnotify.Remove,
+			Name: "foo",
+		},
+		fsnotify.Event{
+			Op:   fsnotify.Rename,
+			Name: "foo",
+		},
+	}
+	for _, e := range events {
+		assert.True(t, watcher.Handle(e))
+	}
+}
+
+func Test_FsWatcher_Handle_ReturnsTrue_OnCreateOrWrite(t *testing.T) {
+	// create the project directory
+	path, err := ioutil.TempDir("", "tagger-tests")
+	assert.Nil(t, err)
+	defer os.RemoveAll(path)
+
+	watcher := NewFsWatcher([]string{})
+	events := []fsnotify.Event{
+		fsnotify.Event{
+			Op:   fsnotify.Create,
+			Name: path,
+		},
+		fsnotify.Event{
+			Op:   fsnotify.Write,
+			Name: path,
+		},
+	}
+	for _, e := range events {
+		assert.True(t, watcher.Handle(e))
+	}
+}
+
+func Test_FsWatcher_Handle_ReturnsFalse_OnChmod(t *testing.T) {
+	watcher := NewFsWatcher([]string{})
+	e := fsnotify.Event{
+		Op:   fsnotify.Chmod,
+		Name: "foo",
+	}
+	assert.False(t, watcher.Handle(e))
 }
 
 func Test_discover_IncludesAllDirectoriesUnderRoot(t *testing.T) {
