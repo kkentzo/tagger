@@ -6,10 +6,16 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type Monitorable interface {
+	Monitor(ctx context.Context)
+	Index()
+}
+
 type Project struct {
 	Path    string
 	Indexer Indexable
 	Watcher Watchable
+	// TODO: Add a channel for MultiProject
 }
 
 func DefaultProject(indexer Indexable, watcher Watchable) *Project {
