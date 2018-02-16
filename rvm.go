@@ -41,7 +41,7 @@ func rvmGemsetPath(root string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	rg, err := rubyVersion(root)
+	rg, err := rubyGemset(root)
 	if err != nil {
 		return "", err
 	}

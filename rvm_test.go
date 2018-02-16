@@ -69,12 +69,33 @@ func Test_Rvm_rubyGemset_ReturnsGemset(t *testing.T) {
 	defer os.RemoveAll(path)
 
 	f := TouchFile(t, filepath.Join(path, ".ruby-gemset"))
-	_, err = f.Write([]byte("gem@2.1.3"))
+	_, err = f.Write([]byte("gem"))
 	f.Close()
 	assert.Nil(t, err)
 
 	rg, err := rubyGemset(path)
-	assert.Equal(t, "gem@2.1.3", rg)
+	assert.Equal(t, "gem", rg)
+	assert.Nil(t, err)
+}
+
+func Test_Rvm_rubyGemsetPath_ReturnsGemset(t *testing.T) {
+	path, err := ioutil.TempDir("", "tagger-tests")
+	assert.Nil(t, err)
+	defer os.RemoveAll(path)
+
+	f := TouchFile(t, filepath.Join(path, ".ruby-gemset"))
+	_, err = f.Write([]byte("gem"))
+	f.Close()
+	assert.Nil(t, err)
+
+	f = TouchFile(t, filepath.Join(path, ".ruby-version"))
+	_, err = f.Write([]byte("ruby-2.1.3"))
+	f.Close()
+	assert.Nil(t, err)
+
+	gsPath, err := rvmGemsetPath(path)
+	expPath := filepath.Join(os.Getenv("HOME"), ".rvm/gems/ruby-2.1.3@gem/gems")
+	assert.Equal(t, expPath, gsPath)
 	assert.Nil(t, err)
 }
 
