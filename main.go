@@ -6,6 +6,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var TagFilePrefix string = "TAGS"
+
 func main() {
 
 	log.SetFormatter(&log.TextFormatter{})
@@ -32,6 +34,9 @@ func main() {
 	} else {
 		config = NewConfig(*configFilePath)
 	}
+
+	// set global value of tag prefix
+	TagFilePrefix = config.Indexer.TagFile
 
 	// create project manager
 	manager := NewManager(config.Indexer, config.Projects)

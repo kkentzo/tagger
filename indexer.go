@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os/exec"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -25,32 +24,30 @@ type Indexer struct {
 	Args         []string
 	TagFile      string `yaml:"tag_file"`
 	Type         IndexerType
-	Exclude      []string
+	ExcludeDirs  []string
 	MaxFrequency time.Duration `yaml:"max_frequency"`
 }
 
 func DefaultIndexer() *Indexer {
 	return &Indexer{
-		Program: "ctags",
-		Args:    []string{"-R", "-e"},
-		TagFile: "TAGS",
-		Type:    Generic,
-		Exclude: []string{".git"},
+		Program:     "ctags",
+		Args:        []string{"-R", "-e"},
+		TagFile:     TagFilePrefix,
+		Type:        Generic,
+		ExcludeDirs: []string{".git"},
 	}
 }
 
 func (indexer *Indexer) Index(root string) {
 	args := indexer.GetArguments(root)
-	cmd := exec.Command(indexer.Program, args...)
-	cmd.Dir = root
-	out, err := cmd.CombinedOutput()
+	out, err := ExecInPath(indexer.Program, args, root)
 	if err != nil {
 		log.Error(out, err.Error())
 	}
 }
 
 func (indexer *Indexer) CreateWatcher(root string) Watchable {
-	return NewWatcher(root, indexer.Exclude, indexer.MaxFrequency)
+	return NewWatcher(root, indexer.ExcludeDirs, indexer.MaxFrequency)
 }
 
 func (indexer *Indexer) GetArguments(root string) []string {
@@ -62,7 +59,7 @@ func (indexer *Indexer) GetArguments(root string) []string {
 	args = append(args, indexer.Args...)
 	// add excluded paths
 	exclusions := []string{}
-	for _, excl := range indexer.Exclude {
+	for _, excl := range indexer.ExcludeDirs {
 		exclusions = append(exclusions, fmt.Sprintf("--exclude=%s", excl))
 	}
 	args = append(args, exclusions...)

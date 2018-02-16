@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -25,4 +26,11 @@ func IsDirectory(path string) (bool, error) {
 	}
 
 	return fileInfo.IsDir(), nil
+}
+
+func ExecInPath(cmd string, args []string, path string) (string, error) {
+	command := exec.Command(cmd, args...)
+	command.Dir = path
+	out, err := command.CombinedOutput()
+	return string(out), err
 }

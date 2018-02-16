@@ -34,6 +34,13 @@
 *** DONE Move add, remove (and pathset field) to FsWatcher
 *** DONE Test these ^^^ (functionally)
 *** DONE Move discover to FsWatcher (as a func)
+** Implement Smart Indexer
+*** if project is rvm, monitor Gemfile.lock
+**** if it changes reindex gems and concat!
+*** rvm: one for project, one for gemset
+*** but gemset has too many files
+*** let's monitor Gemfile.lock only for the project!!
+*** do we need multi-project??
 ** Write README
 ** Banners on README (go report, CI build, coverage)
 ** Advertise!! Publish!!
