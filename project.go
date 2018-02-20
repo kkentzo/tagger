@@ -45,5 +45,5 @@ func (project *Project) Monitor(ctx context.Context) {
 
 func (project *Project) Index(isSpecial bool) {
 	log.Info("Indexing ", project.Path)
-	project.Indexer.Index(project.Path)
+	project.Indexer.Index(project.Path, isSpecial)
 }

@@ -40,9 +40,6 @@ func (manager *Manager) Add(path string) {
 		log.Debugf("Path %s already monitored", path)
 		return
 	}
-	// TODO: Is this an rvm project?? rvmGemsetPath(path)
-	// if yes, initiate a MultiProject container that watches multiple
-	// projects and concats the resulting files into one TAGS file
 	if _, ok := manager.projects[path]; !ok {
 		project := &Project{
 			Path:    path,

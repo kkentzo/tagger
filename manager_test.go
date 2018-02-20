@@ -19,7 +19,7 @@ func Test_NewManager(t *testing.T) {
 
 	indexer := &MockIndexer{}
 	indexer.On("CreateWatcher", path).Return(watcher)
-	indexer.On("Index", path)
+	indexer.On("Index", path, false)
 
 	manager := NewManager(indexer, projects)
 
@@ -36,6 +36,8 @@ func Test_Manager_Add_WillNotAddProject_WhenPathDoesNotExist(t *testing.T) {
 	assert.Nil(t, err)
 	os.RemoveAll(path)
 
+	indexer.On("Index", path, false)
+
 	manager.Add(path)
 	assert.NotContains(t, manager.projects, path)
 }
@@ -51,7 +53,7 @@ func Test_Manager_Add_WillAddProject_WhenPathExists(t *testing.T) {
 
 	watcher := CreateMockWatcher()
 	indexer.On("CreateWatcher", path).Return(watcher)
-	indexer.On("Index", path)
+	indexer.On("Index", path, false)
 	manager.Add(path)
 
 	assert.Contains(t, manager.projects, path)
@@ -68,7 +70,7 @@ func Test_Manager_Remove_WillRemoveProjectFromManager(t *testing.T) {
 	watcher := CreateMockWatcher()
 	indexer := &MockIndexer{}
 	indexer.On("CreateWatcher", path).Return(watcher)
-	indexer.On("Index", path)
+	indexer.On("Index", path, false)
 	manager := NewManager(indexer, projects)
 	assert.Contains(t, manager.projects, path)
 

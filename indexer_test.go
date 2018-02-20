@@ -15,8 +15,8 @@ type MockIndexer struct {
 	mock.Mock
 }
 
-func (indexer *MockIndexer) Index(root string) {
-	indexer.Called(root)
+func (indexer *MockIndexer) Index(root string, isSpecial bool) {
+	indexer.Called(root, isSpecial)
 }
 
 func (indexer *MockIndexer) CreateWatcher(root string) Watchable {
@@ -45,7 +45,7 @@ func Test_Indexer_Index_ShouldTriggerCommand(t *testing.T) {
 		Type:    Generic,
 	}
 
-	indexer.Index(path)
+	indexer.Index(path, false)
 	assert.True(t, FileExists(filepath.Join(path, "aaa")))
 }
 

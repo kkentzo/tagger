@@ -8,7 +8,7 @@ import (
 )
 
 type Indexable interface {
-	Index(string)
+	Index(string, bool)
 	CreateWatcher(string) Watchable
 }
 
@@ -38,7 +38,7 @@ func DefaultIndexer() *Indexer {
 	}
 }
 
-func (indexer *Indexer) Index(root string) {
+func (indexer *Indexer) Index(root string, isSpecial bool) {
 	args := indexer.GetArguments(root)
 	out, err := ExecInPath(indexer.Program, args, root)
 	if err != nil {
