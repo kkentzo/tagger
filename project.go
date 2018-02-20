@@ -8,7 +8,7 @@ import (
 
 type Monitorable interface {
 	Monitor(ctx context.Context)
-	Index()
+	Index(bool)
 }
 
 type Project struct {
@@ -27,15 +27,15 @@ func DefaultProject(indexer Indexable, watcher Watchable) *Project {
 
 func (project *Project) Monitor(ctx context.Context) {
 	// perform an initial indexing
-	go project.Index()
+	go project.Index(false)
 	defer project.Watcher.Close()
 	wctx, cancel := context.WithCancel(ctx)
 	go project.Watcher.Watch(wctx)
 	for {
 		select {
 		// TODO: Consume event (Special File)
-		case <-project.Watcher.Events():
-			go project.Index()
+		case e := <-project.Watcher.Events():
+			go project.Index(e.IsSpecial)
 		case <-ctx.Done():
 			cancel()
 			return
@@ -43,7 +43,7 @@ func (project *Project) Monitor(ctx context.Context) {
 	}
 }
 
-func (project *Project) Index() {
+func (project *Project) Index(isSpecial bool) {
 	log.Info("Indexing ", project.Path)
 	project.Indexer.Index(project.Path)
 }

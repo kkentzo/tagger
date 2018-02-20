@@ -54,3 +54,15 @@ func Test_Project_Monitor_WillCloseWatcher_OnContextCancellation(t *testing.T) {
 	project.Monitor(ctx)
 	<-closed
 }
+
+func Test_Project_Index_WillCallTheIndexer(t *testing.T) {
+	indexer := &MockIndexer{}
+	watcher := &MockWatcher{}
+
+	called := false
+	indexer.On("Index", ".").Run(func(args mock.Arguments) { called = true })
+
+	project := DefaultProject(indexer, watcher)
+	project.Index(true)
+	assert.True(t, called)
+}
