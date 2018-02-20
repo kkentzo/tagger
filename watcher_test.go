@@ -26,12 +26,12 @@ func (watcher *MockWatcher) Watch(ctx context.Context) {
 	watcher.Called(ctx)
 }
 
-func (watcher *MockWatcher) Events() chan struct{} {
+func (watcher *MockWatcher) Events() chan Event {
 	args := watcher.Called()
 	if len(args) > 0 {
-		return args.Get(0).(chan struct{})
+		return args.Get(0).(chan Event)
 	} else {
-		return make(chan struct{})
+		return make(chan Event)
 	}
 }
 
@@ -45,15 +45,14 @@ func Test_NewWatcher(t *testing.T) {
 	assert.Equal(t, "foo", watcher.Root)
 	assert.Equal(t, 2*time.Second, watcher.MaxFrequency)
 	assert.IsType(t, &FsWatcher{}, watcher.fsWatcher)
-	assert.IsType(t, make(chan struct{}), watcher.events)
+	assert.IsType(t, make(chan Event), watcher.events)
 }
 
 func Test_Watcher_Events_ReturnsTheChannel(t *testing.T) {
 	watcher := NewWatcher("foo", []string{"excl"}, 2*time.Second)
 	defer watcher.Close()
-	var s struct{}
-	go func(w *Watcher) { watcher.Events() <- s }(watcher)
-	assert.Equal(t, s, <-watcher.Events())
+	go func(w *Watcher) { watcher.Events() <- Event{} }(watcher)
+	assert.Equal(t, Event{}, <-watcher.Events())
 }
 
 func Test_Watcher_Close_ClosesTheChannels(t *testing.T) {
@@ -94,6 +93,9 @@ func Test_Watcher_Watch_ShouldCallHandler_OnFsNotify_Event(t *testing.T) {
 	assert.Equal(t, e, <-fired)
 }
 
+func Test_Watcher_Watch_ShouldSetSpecialFile_OnFsNotify_Event(t *testing.T) {
+}
+
 func Test_Watcher_Watch_ShouldReindex_WhenTickerTicks(t *testing.T) {
 	fsWatcher := &MockFsWatcher{}
 	events := make(chan fsnotify.Event)
@@ -114,6 +116,5 @@ func Test_Watcher_Watch_ShouldReindex_WhenTickerTicks(t *testing.T) {
 	// fire the filesystem event
 	events <- e
 	// expectation
-	var msg struct{}
-	assert.Equal(t, msg, <-watcher.events)
+	assert.Equal(t, Event{}, <-watcher.events)
 }

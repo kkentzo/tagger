@@ -47,7 +47,11 @@ func (indexer *Indexer) Index(root string) {
 }
 
 func (indexer *Indexer) CreateWatcher(root string) Watchable {
-	return NewWatcher(root, indexer.ExcludeDirs, indexer.MaxFrequency)
+	w := NewWatcher(root, indexer.ExcludeDirs, indexer.MaxFrequency)
+	if indexer.Type == Rvm {
+		w.SpecialFile = "Gemfile.lock"
+	}
+	return w
 }
 
 func (indexer *Indexer) GetArguments(root string) []string {

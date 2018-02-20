@@ -23,14 +23,14 @@ func Test_Project_Monitor_WillIndexProject_OnWatcherEvent(t *testing.T) {
 	indexer := &MockIndexer{}
 	watcher := &MockWatcher{}
 
-	var event struct{}
-	events := make(chan struct{})
-	go func(e chan struct{}) { events <- event }(events)
+	event := Event{}
+	events := make(chan Event)
+	go func(e chan Event) { events <- event }(events)
 
 	watcher.On("Events").Return(events)
 	watcher.On("Watch", mock.AnythingOfType("*context.cancelCtx"))
 
-	indexed := make(chan struct{})
+	indexed := make(chan Event)
 	indexer.On("Index", ".").Run(func(args mock.Arguments) { indexed <- event })
 
 	project := DefaultProject(indexer, watcher)

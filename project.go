@@ -15,10 +15,6 @@ type Project struct {
 	Path    string
 	Indexer Indexable
 	Watcher Watchable
-	// TODO: Pass to indexer
-	TagFile string
-	// TODO: do we need this if multi-project is killed?
-	Notify func()
 }
 
 func DefaultProject(indexer Indexable, watcher Watchable) *Project {
@@ -37,11 +33,9 @@ func (project *Project) Monitor(ctx context.Context) {
 	go project.Watcher.Watch(wctx)
 	for {
 		select {
+		// TODO: Consume event (Special File)
 		case <-project.Watcher.Events():
 			go project.Index()
-			if project.Notify != nil {
-				go project.Notify()
-			}
 		case <-ctx.Done():
 			cancel()
 			return

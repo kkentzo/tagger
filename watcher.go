@@ -11,15 +11,20 @@ var msg struct{}
 
 type Watchable interface {
 	Watch(context.Context)
-	Events() chan struct{}
+	Events() chan Event
 	Close()
+}
+
+type Event struct {
+	IsSpecial bool
 }
 
 type Watcher struct {
 	Root         string
 	MaxFrequency time.Duration
+	SpecialFile  string
 	fsWatcher    FsWatchable
-	events       chan struct{}
+	events       chan Event
 }
 
 func NewWatcher(root string, exclusions []string, maxFrequency time.Duration) *Watcher {
@@ -27,11 +32,11 @@ func NewWatcher(root string, exclusions []string, maxFrequency time.Duration) *W
 		Root:         root,
 		MaxFrequency: maxFrequency,
 		fsWatcher:    NewFsWatcher(exclusions),
-		events:       make(chan struct{}),
+		events:       make(chan Event),
 	}
 }
 
-func (watcher *Watcher) Events() chan struct{} {
+func (watcher *Watcher) Events() chan Event {
 	return watcher.events
 }
 
@@ -47,6 +52,7 @@ func (watcher *Watcher) Watch(ctx context.Context) {
 	log.Info("Watching ", watcher.Root)
 	// start monitoring
 	mustReindex := false
+	isSpecial := false
 
 	ticker := time.NewTicker(watcher.MaxFrequency)
 	defer ticker.Stop()
@@ -57,12 +63,16 @@ func (watcher *Watcher) Watch(ctx context.Context) {
 			return
 		case <-ticker.C:
 			if mustReindex {
-				watcher.events <- msg
+				watcher.events <- Event{IsSpecial: isSpecial}
 				mustReindex = false
+				isSpecial = false
 			}
 		case event := <-watcher.fsWatcher.Events():
 			mustReindex = mustReindex ||
 				watcher.fsWatcher.Handle(event)
+			if mustReindex && event.Name == watcher.SpecialFile {
+				isSpecial = true
+			}
 		case err := <-watcher.fsWatcher.Errors():
 			log.Error(err.Error())
 		}
