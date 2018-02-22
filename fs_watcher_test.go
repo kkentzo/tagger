@@ -202,7 +202,7 @@ func Test_FsWatcher_Handle_ReturnsFalse_OnFileTAGS(t *testing.T) {
 	watcher := NewFsWatcher([]string{})
 	e := fsnotify.Event{
 		Op:   fsnotify.Create,
-		Name: "TAGS",
+		Name: "*TAGS*",
 	}
 	assert.False(t, watcher.Handle(e))
 }

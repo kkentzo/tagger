@@ -38,8 +38,7 @@ func NewFsWatcher(exclusions []string) *FsWatcher {
 }
 
 func (watcher *FsWatcher) Handle(event fsnotify.Event) bool {
-	// TODO: make TAGS a parameter
-	if strings.HasPrefix(filepath.Base(event.Name), "TAGS") {
+	if strings.Contains(filepath.Base(event.Name), TagFilePrefix) {
 		return false
 	}
 	log.Debugf("Event %s on %s", event.Op, event.Name)
