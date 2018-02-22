@@ -24,6 +24,16 @@ func (indexer *MockIndexer) CreateWatcher(root string) Watchable {
 	return args.Get(0).(Watchable)
 }
 
+func CheckGenericArguments(t *testing.T, args []string) {
+	assert.Contains(t, args, "-R")
+	assert.Contains(t, args, "-e")
+	assert.Contains(t, args, "--exclude=.git")
+}
+
+func Test_Indexer_Deserialization(t *testing.T) {
+	t.Skip("TODO")
+}
+
 func Test_Indexer_DefaultIndexer(t *testing.T) {
 	indexer := DefaultIndexer()
 	assert.Equal(t, "ctags", indexer.Program)
@@ -61,21 +71,27 @@ func Test_Indexer_CreateWatcher_ShouldReturnAWatcher(t *testing.T) {
 	assert.Equal(t, 2*time.Second, watcher.MaxFrequency)
 }
 
-func Test_Indexer_GetArguments_WhenIndexerIsGeneric(t *testing.T) {
+func Test_Indexer_GetGenericArguments(t *testing.T) {
 	indexer := DefaultIndexer()
-	args := indexer.GetArguments("foo")
-	assert.Contains(t, args, "-f TAGS")
-	assert.Contains(t, args, "-R")
-	assert.Contains(t, args, "-e")
-	assert.Contains(t, args, "--exclude=.git")
-	assert.Contains(t, args, ".")
+	args := indexer.GetGenericArguments("foo")
+	CheckGenericArguments(t, args)
+	assert.Equal(t, 3, len(args))
 }
 
-func Test_Indexer_GetArguments_WhenIndexerIsRvm(t *testing.T) {
+func Test_Indexer_GetProjectArguments(t *testing.T) {
+	indexer := DefaultIndexer()
+	args := indexer.GetProjectArguments("foo")
+	CheckGenericArguments(t, args)
+	assert.Contains(t, args, "-f TAGS.project")
+	assert.Equal(t, ".", args[len(args)-1])
+}
+
+func Test_Indexer_GetGemsetArguments_WhenIndexerIsRvm(t *testing.T) {
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
 	defer os.RemoveAll(path)
 
+	// Prepare rvm-specific files
 	TouchFile(t, filepath.Join(path, "Gemfile")).Close()
 	f := TouchFile(t, filepath.Join(path, ".ruby-version"))
 	f.Write([]byte("2.1.3"))
@@ -86,25 +102,17 @@ func Test_Indexer_GetArguments_WhenIndexerIsRvm(t *testing.T) {
 
 	indexer := DefaultIndexer()
 	indexer.Type = Rvm
-	args := indexer.GetArguments(path)
-	assert.Contains(t, args, "-f TAGS")
-	assert.Contains(t, args, "-R")
-	assert.Contains(t, args, "-e")
-	assert.Contains(t, args, "--exclude=.git")
-	assert.Contains(t, args, ".")
+	args := indexer.GetGemsetArguments(path)
+	CheckGenericArguments(t, args)
 	gp, err := rvmGemsetPath(path)
 	assert.Nil(t, err)
-	assert.Contains(t, args, gp)
+	assert.Contains(t, args, "-f TAGS.gemset")
+	assert.Equal(t, gp, args[len(args)-1])
 }
 
-func Test_Indexer_GetArguments_WhenIndexerIsRvm_ButProjectIsNot(t *testing.T) {
+func Test_Indexer_GetGemsetArguments_WhenIndexerIsNotRvm(t *testing.T) {
 	indexer := DefaultIndexer()
 	indexer.Type = Rvm
-	args := indexer.GetArguments("foo")
-	assert.Contains(t, args, "-f TAGS")
-	assert.Contains(t, args, "-R")
-	assert.Contains(t, args, "-e")
-	assert.Contains(t, args, "--exclude=.git")
-	assert.Contains(t, args, ".")
-	assert.Equal(t, 5, len(args))
+	args := indexer.GetGemsetArguments("foo")
+	assert.Empty(t, args)
 }

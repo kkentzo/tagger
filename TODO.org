@@ -1,7 +1,7 @@
 * Milestones
 ** DONE consume all info from demo.yml (with a global indexer)
 ** DONE work on Indexer#Index (remove hard-coded stuff / parameterize command )
-** DONE Implement Indexer#GetArguments()
+** DONE Implement Indexer#GetGenericArguments()
 ** DONE implement flags for debug mode
 ** DONE read yml from command line or home directory
 ** DONE Monitor all specified projects
@@ -35,9 +35,10 @@
 *** DONE Test these ^^^ (functionally)
 *** DONE Move discover to FsWatcher (as a func)
 ** Implement Smart Indexer with SpecialFile
-*** do not reindex project + gems everytime -- only when special file changes
-*** Consume Event#IsSpecial in Project#Monitor and Indexer#Index
-*** keep two files and concat to one in any case
+*** DONE do not reindex project + gems everytime -- only when special file changes
+*** DONE Consume Event#IsSpecial in Project#Monitor and Indexer#Index
+*** DONE keep two files and concat to one in any case
+*** Cleanups + TODOs
 ** Write README
 ** Banners on README (go report, CI build, coverage)
 ** Advertise!! Publish!!

@@ -65,3 +65,27 @@ func Test_IsDirectory_ReturnsFalse_WhenPathIsFile(t *testing.T) {
 	assert.False(t, result)
 	assert.Nil(t, err)
 }
+
+func Test_ConcatFiles(t *testing.T) {
+	// create the project directory
+	path, err := ioutil.TempDir("", "tagger-tests")
+	assert.Nil(t, err)
+	defer os.RemoveAll(path)
+
+	f_a := filepath.Join(path, "a")
+	f := TouchFile(t, f_a)
+	f.Write([]byte("aaa"))
+	f.Close()
+
+	f_b := filepath.Join(path, "b")
+	f = TouchFile(t, f_b)
+	f.Write([]byte("bbb"))
+	f.Close()
+
+	f_c := filepath.Join(path, "c")
+
+	err = ConcatFiles(f_c, []string{f_a, f_b}, path)
+	assert.Nil(t, err)
+	contents, err := ioutil.ReadFile(f_c)
+	assert.Equal(t, "aaabbb", string(contents))
+}

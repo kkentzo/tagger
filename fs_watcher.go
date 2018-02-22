@@ -5,6 +5,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/fsnotify/fsnotify"
 
@@ -38,7 +39,7 @@ func NewFsWatcher(exclusions []string) *FsWatcher {
 
 func (watcher *FsWatcher) Handle(event fsnotify.Event) bool {
 	// TODO: make TAGS a parameter
-	if filepath.Base(event.Name) == "TAGS" {
+	if strings.HasPrefix(filepath.Base(event.Name), "TAGS") {
 		return false
 	}
 	log.Debugf("Event %s on %s", event.Op, event.Name)

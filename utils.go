@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -28,9 +30,23 @@ func IsDirectory(path string) (bool, error) {
 	return fileInfo.IsDir(), nil
 }
 
-func ExecInPath(cmd string, args []string, path string) (string, error) {
+func ExecInPath(cmd string, args []string, path string) ([]byte, error) {
 	command := exec.Command(cmd, args...)
 	command.Dir = path
 	out, err := command.CombinedOutput()
-	return string(out), err
+	return out, err
+}
+
+func ConcatFiles(to string, files []string, path string) error {
+	out, err := ExecInPath("cat", files, path)
+	if err != nil {
+		return errors.New(fmt.Sprint(string(out), err.Error()))
+	}
+	f, err := os.Create(to)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	f.Write(out)
+	return nil
 }
