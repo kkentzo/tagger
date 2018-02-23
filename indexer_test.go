@@ -118,6 +118,37 @@ func Test_Indexer_GetGemsetArguments_WhenIndexerIsNotRvm(t *testing.T) {
 	assert.Empty(t, args)
 }
 
+func Test_Indexer_GetTagFileNameForGemset(t *testing.T) {
+	indexer := DefaultIndexer()
+	assert.Equal(t, "aaa/TAGS.gemset", indexer.GetTagFileNameForGemset("aaa"))
+
+}
+
+func Test_Indexer_GemsetTagFileExists_ReturnsTrue_WhenTagFileExists(t *testing.T) {
+	path, err := ioutil.TempDir("", "tagger-tests")
+	assert.Nil(t, err)
+	defer os.RemoveAll(path)
+
+	TouchFile(t, filepath.Join(path, "TAGS.gemset")).Close()
+
+	indexer := DefaultIndexer()
+	assert.True(t, indexer.GemsetTagFileExists(path))
+}
+
+func Test_Indexer_GemsetTagFileExists_ReturnsFalse_WhenTagFileDoesNotExist(t *testing.T) {
+	path, err := ioutil.TempDir("", "tagger-tests")
+	assert.Nil(t, err)
+	defer os.RemoveAll(path)
+
+	indexer := DefaultIndexer()
+	assert.False(t, indexer.GemsetTagFileExists(path))
+}
+
+func Test_Indexer_GetTagFileNameForProject(t *testing.T) {
+	indexer := DefaultIndexer()
+	assert.Equal(t, "aaa/TAGS.project", indexer.GetTagFileNameForProject("aaa"))
+}
+
 func Test_Indexer_ProjectTagFileExists_ReturnsTrue_WhenTagFileExists(t *testing.T) {
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
