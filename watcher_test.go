@@ -94,6 +94,29 @@ func Test_Watcher_Watch_ShouldCallHandler_OnFsNotify_Event(t *testing.T) {
 }
 
 func Test_Watcher_Watch_ShouldSetSpecialFile_OnFsNotify_Event(t *testing.T) {
+	fsWatcher := &MockFsWatcher{}
+	events := make(chan fsnotify.Event)
+	fsWatcher.On("Events").Return(events)
+	fsWatcher.On("Errors").Return(make(chan error))
+	fsWatcher.On("Add", "foo").Return(nil)
+
+	watcher := NewWatcher("foo", []string{}, 10*time.Millisecond)
+	watcher.fsWatcher = fsWatcher
+	watcher.SpecialFile = "the_special_file"
+
+	e := fsnotify.Event{
+		Name: "the_special_file",
+		Op:   fsnotify.Create,
+	}
+	fsWatcher.On("Handle", mock.AnythingOfType("fsnotify.Event")).Return(true)
+
+	go watcher.Watch(context.Background())
+	// fire the filesystem event
+	events <- e
+	// expectation
+	event := <-watcher.events
+	assert.True(t, event.IsSpecial)
+
 }
 
 func Test_Watcher_Watch_ShouldReindex_WhenTickerTicks(t *testing.T) {
