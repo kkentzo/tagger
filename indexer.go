@@ -21,12 +21,12 @@ const (
 )
 
 type Indexer struct {
-	Program      string
-	Args         []string
-	TagFile      string `yaml:"tag_file"`
-	Type         IndexerType
-	ExcludeDirs  []string      `yaml:"exclude"`
-	MaxFrequency time.Duration `yaml:"max_frequency"`
+	Program     string
+	Args        []string
+	TagFile     string `yaml:"tag_file"`
+	Type        IndexerType
+	ExcludeDirs []string      `yaml:"exclude"`
+	MaxPeriod   time.Duration `yaml:"max_period"`
 }
 
 func DefaultIndexer() *Indexer {
@@ -56,7 +56,7 @@ func (indexer *Indexer) Index(root string, isSpecial bool) {
 }
 
 func (indexer *Indexer) CreateWatcher(root string) Watchable {
-	w := NewWatcher(root, indexer.ExcludeDirs, indexer.MaxFrequency)
+	w := NewWatcher(root, indexer.ExcludeDirs, indexer.MaxPeriod)
 	if indexer.Type == Rvm {
 		w.SpecialFile = "Gemfile.lock"
 	}

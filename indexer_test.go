@@ -61,15 +61,15 @@ func Test_Indexer_Index_ShouldTriggerCommand(t *testing.T) {
 
 func Test_Indexer_CreateWatcher_ShouldReturnAWatcher(t *testing.T) {
 	indexer := &Indexer{
-		MaxFrequency: 2 * time.Second,
-		Type:         Rvm,
+		MaxPeriod: 2 * time.Second,
+		Type:      Rvm,
 	}
 	watcher := indexer.CreateWatcher("foo").(*Watcher)
 	defer watcher.Close()
 
 	assert.Equal(t, "foo", watcher.Root)
 	assert.Equal(t, "Gemfile.lock", watcher.SpecialFile)
-	assert.Equal(t, 2*time.Second, watcher.MaxFrequency)
+	assert.Equal(t, 2*time.Second, watcher.MaxPeriod)
 }
 
 func Test_Indexer_GetGenericArguments(t *testing.T) {

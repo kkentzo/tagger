@@ -11,6 +11,6 @@ indexer:
     - .git
     - log
     - tmp
-  max_frequency: 5s
+  max_period: 5s
 projects:
   - path: ~/Workspace/agnostic_backend

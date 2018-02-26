@@ -20,19 +20,19 @@ type Event struct {
 }
 
 type Watcher struct {
-	Root         string
-	MaxFrequency time.Duration
-	SpecialFile  string
-	fsWatcher    FsWatchable
-	events       chan Event
+	Root        string
+	MaxPeriod   time.Duration
+	SpecialFile string
+	fsWatcher   FsWatchable
+	events      chan Event
 }
 
 func NewWatcher(root string, exclusions []string, maxFrequency time.Duration) *Watcher {
 	return &Watcher{
-		Root:         root,
-		MaxFrequency: maxFrequency,
-		fsWatcher:    NewFsWatcher(exclusions),
-		events:       make(chan Event),
+		Root:      root,
+		MaxPeriod: maxFrequency,
+		fsWatcher: NewFsWatcher(exclusions),
+		events:    make(chan Event),
 	}
 }
 
@@ -54,7 +54,7 @@ func (watcher *Watcher) Watch(ctx context.Context) {
 	mustReindex := false
 	isSpecial := false
 
-	ticker := time.NewTicker(watcher.MaxFrequency)
+	ticker := time.NewTicker(watcher.MaxPeriod)
 	defer ticker.Stop()
 
 	for {

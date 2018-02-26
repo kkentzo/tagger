@@ -43,7 +43,7 @@ func Test_NewWatcher(t *testing.T) {
 	watcher := NewWatcher("foo", []string{"excl"}, 2*time.Second)
 	defer watcher.Close()
 	assert.Equal(t, "foo", watcher.Root)
-	assert.Equal(t, 2*time.Second, watcher.MaxFrequency)
+	assert.Equal(t, 2*time.Second, watcher.MaxPeriod)
 	assert.IsType(t, &FsWatcher{}, watcher.fsWatcher)
 	assert.IsType(t, make(chan Event), watcher.events)
 }
