@@ -3,6 +3,7 @@ package main
 import (
 	"io/ioutil"
 
+	"github.com/kkentzo/tagger/indexers"
 	log "github.com/sirupsen/logrus"
 
 	yaml "gopkg.in/yaml.v2"
@@ -10,7 +11,7 @@ import (
 
 type Config struct {
 	Port     int
-	Indexer  *Indexer
+	Indexer  *indexers.Indexer
 	Projects []struct{ Path string }
 }
 

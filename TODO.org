@@ -34,11 +34,16 @@
 *** DONE Move add, remove (and pathset field) to FsWatcher
 *** DONE Test these ^^^ (functionally)
 *** DONE Move discover to FsWatcher (as a func)
-** Implement Smart Indexer with SpecialFile
+** DONE Implement Smart Indexer with SpecialFile
 *** DONE do not reindex project + gems everytime -- only when special file changes
 *** DONE Consume Event#IsSpecial in Project#Monitor and Indexer#Index
 *** DONE keep two files and concat to one in any case
-*** Cleanups + TODOs
+*** DONE Unit Tests for all new Indexer methods
+** TODO Restructure code in packages
+** Design polymorphic Indexer
+*** currently we have generic and rvm; there should be a better process
+** Include whitelist globs in watcher (e.g. *.rb for files)
+** Cleanups + TODOs
 ** Write README
 ** Banners on README (go report, CI build, coverage)
 ** Advertise!! Publish!!

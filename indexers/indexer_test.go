@@ -1,4 +1,4 @@
-package main
+package indexers
 
 import (
 	"io/ioutil"
@@ -7,21 +7,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/kkentzo/tagger/utils"
+	"github.com/kkentzo/tagger/watchers"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
-type MockIndexer struct {
-	mock.Mock
-}
-
-func (indexer *MockIndexer) Index(root string, isSpecial bool) {
-	indexer.Called(root, isSpecial)
-}
-
-func (indexer *MockIndexer) CreateWatcher(root string) Watchable {
-	args := indexer.Called(root)
-	return args.Get(0).(Watchable)
+func TouchFile(t *testing.T, fname string) *os.File {
+	f, err := os.Create(fname)
+	assert.Nil(t, err)
+	return f
 }
 
 func CheckGenericArguments(t *testing.T, args []string) {
@@ -39,7 +33,7 @@ func Test_Indexer_DefaultIndexer(t *testing.T) {
 	assert.Equal(t, "ctags", indexer.Program)
 	assert.Contains(t, indexer.Args, "-R")
 	assert.Contains(t, indexer.Args, "-e")
-	assert.Equal(t, "TAGS", indexer.TagFile)
+	assert.Equal(t, "TAGS", indexer.TagFilePrefix)
 	assert.Equal(t, Generic, indexer.Type)
 	assert.Contains(t, indexer.ExcludeDirs, ".git")
 }
@@ -56,7 +50,7 @@ func Test_Indexer_Index_ShouldTriggerCommand(t *testing.T) {
 	}
 
 	indexer.Index(path, false)
-	assert.True(t, FileExists(filepath.Join(path, "aaa")))
+	assert.True(t, utils.FileExists(filepath.Join(path, "aaa")))
 }
 
 func Test_Indexer_CreateWatcher_ShouldReturnAWatcher(t *testing.T) {
@@ -64,7 +58,7 @@ func Test_Indexer_CreateWatcher_ShouldReturnAWatcher(t *testing.T) {
 		MaxPeriod: 2 * time.Second,
 		Type:      Rvm,
 	}
-	watcher := indexer.CreateWatcher("foo").(*Watcher)
+	watcher := indexer.CreateWatcher("foo").(*watchers.Watcher)
 	defer watcher.Close()
 
 	assert.Equal(t, "foo", watcher.Root)

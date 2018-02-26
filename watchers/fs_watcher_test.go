@@ -1,4 +1,4 @@
-package main
+package watchers
 
 import (
 	"io/ioutil"
@@ -10,6 +10,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
+
+func TouchFile(t *testing.T, fname string) *os.File {
+	f, err := os.Create(fname)
+	assert.Nil(t, err)
+	return f
+}
 
 type MockFsWatcher struct {
 	mock.Mock
@@ -57,7 +63,7 @@ func Test_FsWatcher_Add_OnFileCreation(t *testing.T) {
 	assert.Nil(t, err)
 	defer os.RemoveAll(path)
 
-	watcher := NewFsWatcher([]string{})
+	watcher := NewFsWatcher([]string{}, "TAGS")
 	defer watcher.Close()
 	err = watcher.Add(path)
 	assert.Nil(t, err)
@@ -77,7 +83,7 @@ func Test_FsWatcher_Add_OnFileChange(t *testing.T) {
 	file := TouchFile(t, filepath.Join(path, "test_file"))
 	defer file.Close()
 
-	watcher := NewFsWatcher([]string{})
+	watcher := NewFsWatcher([]string{}, "TAGS")
 	defer watcher.Close()
 	err = watcher.Add(path)
 	assert.Nil(t, err)
@@ -97,7 +103,7 @@ func Test_FsWatcher_Add_OnFileDeletion(t *testing.T) {
 	fname := filepath.Join(path, "test_file")
 	TouchFile(t, fname).Close()
 
-	watcher := NewFsWatcher([]string{})
+	watcher := NewFsWatcher([]string{}, "TAGS")
 	defer watcher.Close()
 	err = watcher.Add(path)
 	assert.Nil(t, err)
@@ -117,7 +123,7 @@ func Test_FsWatcher_Add_OnFileRename(t *testing.T) {
 	fname := filepath.Join(path, "test_file")
 	TouchFile(t, fname).Close()
 
-	watcher := NewFsWatcher([]string{})
+	watcher := NewFsWatcher([]string{}, "TAGS")
 	// TODO: the following cleanup statement hangs on macOS (test linux)
 	// see fsnotify: kqueue.go#Close()
 	//defer fsWatcher.Close()
@@ -138,7 +144,7 @@ func Test_FsWatcher_Add_OnDirectoryCreation(t *testing.T) {
 	assert.Nil(t, err)
 	defer os.RemoveAll(path)
 
-	watcher := NewFsWatcher([]string{})
+	watcher := NewFsWatcher([]string{}, "TAGS")
 	defer watcher.Close()
 	err = watcher.Add(path)
 	assert.Nil(t, err)
@@ -160,7 +166,7 @@ func Test_FsWatcher_Add_OnDirectoryDeletion(t *testing.T) {
 	err = os.Mkdir(dirName, os.ModePerm)
 	assert.Nil(t, err)
 
-	watcher := NewFsWatcher([]string{})
+	watcher := NewFsWatcher([]string{}, "TAGS")
 	defer watcher.Close()
 	err = watcher.Add(path)
 	assert.Nil(t, err)
@@ -182,7 +188,7 @@ func Test_FsWatcher_Add_OnDirectoryRename(t *testing.T) {
 	err = os.Mkdir(dirName, os.ModePerm)
 	assert.Nil(t, err)
 
-	watcher := NewFsWatcher([]string{})
+	watcher := NewFsWatcher([]string{}, "TAGS")
 	err = watcher.Add(path)
 	// TODO: the following cleanup statement hangs on macOS (test linux)
 	// see fsnotify: kqueue.go#Close()
@@ -199,7 +205,7 @@ func Test_FsWatcher_Add_OnDirectoryRename(t *testing.T) {
 }
 
 func Test_FsWatcher_Handle_ReturnsFalse_OnFileTAGS(t *testing.T) {
-	watcher := NewFsWatcher([]string{})
+	watcher := NewFsWatcher([]string{}, "TAGS")
 	e := fsnotify.Event{
 		Op:   fsnotify.Create,
 		Name: "*TAGS*",
@@ -208,7 +214,7 @@ func Test_FsWatcher_Handle_ReturnsFalse_OnFileTAGS(t *testing.T) {
 }
 
 func Test_FsWatcher_Handle_ReturnsTrue_OnRemoveOrRename(t *testing.T) {
-	watcher := NewFsWatcher([]string{})
+	watcher := NewFsWatcher([]string{}, "TAGS")
 	events := []fsnotify.Event{
 		fsnotify.Event{
 			Op:   fsnotify.Remove,
@@ -230,7 +236,7 @@ func Test_FsWatcher_Handle_ReturnsTrue_OnCreateOrWrite(t *testing.T) {
 	assert.Nil(t, err)
 	defer os.RemoveAll(path)
 
-	watcher := NewFsWatcher([]string{})
+	watcher := NewFsWatcher([]string{}, "TAGS")
 	events := []fsnotify.Event{
 		fsnotify.Event{
 			Op:   fsnotify.Create,
@@ -247,7 +253,7 @@ func Test_FsWatcher_Handle_ReturnsTrue_OnCreateOrWrite(t *testing.T) {
 }
 
 func Test_FsWatcher_Handle_ReturnsFalse_OnChmod(t *testing.T) {
-	watcher := NewFsWatcher([]string{})
+	watcher := NewFsWatcher([]string{}, "TAGS")
 	e := fsnotify.Event{
 		Op:   fsnotify.Chmod,
 		Name: "foo",

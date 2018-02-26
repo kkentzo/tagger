@@ -3,17 +3,17 @@ package main
 import (
 	"flag"
 
+	"github.com/kkentzo/tagger/indexers"
+	"github.com/kkentzo/tagger/utils"
 	log "github.com/sirupsen/logrus"
 )
-
-var TagFilePrefix string = "TAGS"
 
 func main() {
 
 	log.SetFormatter(&log.TextFormatter{})
 
 	// parse command line args
-	configFilePath := flag.String("c", Canonicalize("~/.tagger.yml"), "Path to config file")
+	configFilePath := flag.String("c", utils.Canonicalize("~/.tagger.yml"), "Path to config file")
 	debug := flag.Bool("d", false, "Activate debug logging level")
 	x := flag.Bool("x", false, "Generate tags in current directory and exit")
 	flag.Parse()
@@ -28,15 +28,12 @@ func main() {
 	var config *Config
 	if *x {
 		config = &Config{
-			Indexer:  DefaultIndexer(),
+			Indexer:  indexers.DefaultIndexer(),
 			Projects: []struct{ Path string }{{"."}},
 		}
 	} else {
 		config = NewConfig(*configFilePath)
 	}
-
-	// set global value of tag prefix
-	TagFilePrefix = config.Indexer.TagFile
 
 	// create project manager
 	manager := NewManager(config.Indexer, config.Projects)

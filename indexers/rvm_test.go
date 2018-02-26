@@ -1,4 +1,4 @@
-package main
+package indexers
 
 import (
 	"io/ioutil"

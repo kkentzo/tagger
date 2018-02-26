@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 
+	"github.com/kkentzo/tagger/indexers"
+	"github.com/kkentzo/tagger/watchers"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -13,11 +15,11 @@ type Monitorable interface {
 
 type Project struct {
 	Path    string
-	Indexer Indexable
-	Watcher Watchable
+	Indexer indexers.Indexable
+	Watcher watchers.Watchable
 }
 
-func DefaultProject(indexer Indexable, watcher Watchable) *Project {
+func DefaultProject(indexer indexers.Indexable, watcher watchers.Watchable) *Project {
 	return &Project{
 		Path:    ".",
 		Indexer: indexer,

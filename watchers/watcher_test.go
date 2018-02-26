@@ -1,4 +1,4 @@
-package main
+package watchers
 
 import (
 	"context"
@@ -10,37 +10,8 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type MockWatcher struct {
-	mock.Mock
-}
-
-func CreateMockWatcher() *MockWatcher {
-	watcher := &MockWatcher{}
-	watcher.On("Watch", mock.AnythingOfType("*context.cancelCtx"))
-	watcher.On("Close")
-	watcher.On("Events")
-	return watcher
-}
-
-func (watcher *MockWatcher) Watch(ctx context.Context) {
-	watcher.Called(ctx)
-}
-
-func (watcher *MockWatcher) Events() chan Event {
-	args := watcher.Called()
-	if len(args) > 0 {
-		return args.Get(0).(chan Event)
-	} else {
-		return make(chan Event)
-	}
-}
-
-func (watcher *MockWatcher) Close() {
-	watcher.Called()
-}
-
 func Test_NewWatcher(t *testing.T) {
-	watcher := NewWatcher("foo", []string{"excl"}, 2*time.Second)
+	watcher := NewWatcher("foo", []string{"excl"}, "TAGS", 2*time.Second)
 	defer watcher.Close()
 	assert.Equal(t, "foo", watcher.Root)
 	assert.Equal(t, 2*time.Second, watcher.MaxPeriod)
@@ -49,14 +20,14 @@ func Test_NewWatcher(t *testing.T) {
 }
 
 func Test_Watcher_Events_ReturnsTheChannel(t *testing.T) {
-	watcher := NewWatcher("foo", []string{"excl"}, 2*time.Second)
+	watcher := NewWatcher("foo", []string{"excl"}, "TAGS", 2*time.Second)
 	defer watcher.Close()
 	go func(w *Watcher) { watcher.Events() <- Event{} }(watcher)
 	assert.Equal(t, Event{}, <-watcher.Events())
 }
 
 func Test_Watcher_Close_ClosesTheChannels(t *testing.T) {
-	watcher := NewWatcher("foo", []string{"excl"}, 2*time.Second)
+	watcher := NewWatcher("foo", []string{"excl"}, "TAGS", 2*time.Second)
 	watcher.Close()
 	_, open := <-watcher.Events()
 	assert.False(t, open)
@@ -71,7 +42,7 @@ func Test_Watcher_Watch_ShouldCallHandler_OnFsNotify_Event(t *testing.T) {
 	fsWatcher.On("Errors").Return(make(chan error))
 	fsWatcher.On("Add", "foo").Return(nil)
 
-	watcher := NewWatcher("foo", []string{}, 2*time.Second)
+	watcher := NewWatcher("foo", []string{}, "TAGS", 2*time.Second)
 	watcher.fsWatcher = fsWatcher
 
 	e := fsnotify.Event{
@@ -100,7 +71,7 @@ func Test_Watcher_Watch_ShouldSetSpecialFile_OnFsNotify_Event(t *testing.T) {
 	fsWatcher.On("Errors").Return(make(chan error))
 	fsWatcher.On("Add", "foo").Return(nil)
 
-	watcher := NewWatcher("foo", []string{}, 10*time.Millisecond)
+	watcher := NewWatcher("foo", []string{}, "TAGS", 10*time.Millisecond)
 	watcher.fsWatcher = fsWatcher
 	watcher.SpecialFile = "the_special_file"
 
@@ -126,7 +97,7 @@ func Test_Watcher_Watch_ShouldReindex_WhenTickerTicks(t *testing.T) {
 	fsWatcher.On("Errors").Return(make(chan error))
 	fsWatcher.On("Add", "foo").Return(nil)
 
-	watcher := NewWatcher("foo", []string{}, 10*time.Millisecond)
+	watcher := NewWatcher("foo", []string{}, "TAGS", 10*time.Millisecond)
 	watcher.fsWatcher = fsWatcher
 
 	e := fsnotify.Event{

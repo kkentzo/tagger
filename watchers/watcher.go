@@ -1,4 +1,4 @@
-package main
+package watchers
 
 import (
 	"context"
@@ -27,11 +27,11 @@ type Watcher struct {
 	events      chan Event
 }
 
-func NewWatcher(root string, exclusions []string, maxFrequency time.Duration) *Watcher {
+func NewWatcher(root string, exclusions []string, tagFilePrefix string, maxFrequency time.Duration) *Watcher {
 	return &Watcher{
 		Root:      root,
 		MaxPeriod: maxFrequency,
-		fsWatcher: NewFsWatcher(exclusions),
+		fsWatcher: NewFsWatcher(exclusions, tagFilePrefix),
 		events:    make(chan Event),
 	}
 }

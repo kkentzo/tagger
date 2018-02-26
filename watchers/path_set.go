@@ -1,4 +1,4 @@
-package main
+package watchers
 
 type PathSet struct {
 	paths map[string]bool

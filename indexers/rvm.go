@@ -1,4 +1,4 @@
-package main
+package indexers
 
 import (
 	"fmt"
@@ -6,16 +6,18 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/kkentzo/tagger/utils"
 )
 
 func isRuby(root string) bool {
-	return FileExists(filepath.Join(root, "Gemfile"))
+	return utils.FileExists(filepath.Join(root, "Gemfile"))
 }
 
 func isRvm(root string) bool {
 	return isRuby(root) &&
-		FileExists(filepath.Join(root, ".ruby-version")) &&
-		FileExists(filepath.Join(root, ".ruby-gemset"))
+		utils.FileExists(filepath.Join(root, ".ruby-version")) &&
+		utils.FileExists(filepath.Join(root, ".ruby-gemset"))
 }
 
 func rubyVersion(root string) (string, error) {

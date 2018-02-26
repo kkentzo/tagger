@@ -1,4 +1,4 @@
-package main
+package watchers
 
 // encapsulates fsnotify.Watcher
 
@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/kkentzo/tagger/utils"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -23,22 +24,24 @@ type FsWatchable interface {
 
 type FsWatcher struct {
 	*fsnotify.Watcher
-	exclusions *PathSet
+	exclusions    *PathSet
+	tagFilePrefix string
 }
 
-func NewFsWatcher(exclusions []string) *FsWatcher {
+func NewFsWatcher(exclusions []string, tagFilePrefix string) *FsWatcher {
 	w, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal("Failed to initialize filesystem watcher")
 	}
 	return &FsWatcher{
-		Watcher:    w,
-		exclusions: NewPathSet(exclusions),
+		Watcher:       w,
+		exclusions:    NewPathSet(exclusions),
+		tagFilePrefix: tagFilePrefix,
 	}
 }
 
 func (watcher *FsWatcher) Handle(event fsnotify.Event) bool {
-	if strings.Contains(filepath.Base(event.Name), TagFilePrefix) {
+	if strings.Contains(filepath.Base(event.Name), watcher.tagFilePrefix) {
 		return false
 	}
 	log.Debugf("Event %s on %s", event.Op, event.Name)
@@ -48,7 +51,7 @@ func (watcher *FsWatcher) Handle(event fsnotify.Event) bool {
 		return true
 	} else if event.Op&fsnotify.Create == fsnotify.Create ||
 		event.Op&fsnotify.Write == fsnotify.Write {
-		if isDir, err := IsDirectory(event.Name); err != nil {
+		if isDir, err := utils.IsDirectory(event.Name); err != nil {
 			log.Error(err.Error())
 			return false
 		} else if isDir {

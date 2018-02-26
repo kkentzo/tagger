@@ -1,16 +1,20 @@
-package main
+package indexers
 
 import (
 	"fmt"
 	"path/filepath"
 	"time"
 
+	"github.com/kkentzo/tagger/utils"
+	"github.com/kkentzo/tagger/watchers"
 	log "github.com/sirupsen/logrus"
 )
 
+const TagFilePrefix string = "TAGS"
+
 type Indexable interface {
 	Index(string, bool)
-	CreateWatcher(string) Watchable
+	CreateWatcher(string) watchers.Watchable
 }
 
 type IndexerType string
@@ -21,21 +25,21 @@ const (
 )
 
 type Indexer struct {
-	Program     string
-	Args        []string
-	TagFile     string `yaml:"tag_file"`
-	Type        IndexerType
-	ExcludeDirs []string      `yaml:"exclude"`
-	MaxPeriod   time.Duration `yaml:"max_period"`
+	Program       string
+	Args          []string
+	TagFilePrefix string `yaml:"tag_file"`
+	Type          IndexerType
+	ExcludeDirs   []string      `yaml:"exclude"`
+	MaxPeriod     time.Duration `yaml:"max_period"`
 }
 
 func DefaultIndexer() *Indexer {
 	return &Indexer{
-		Program:     "ctags",
-		Args:        []string{"-R", "-e"},
-		TagFile:     TagFilePrefix,
-		Type:        Generic,
-		ExcludeDirs: []string{".git"},
+		Program:       "ctags",
+		Args:          []string{"-R", "-e"},
+		TagFilePrefix: TagFilePrefix,
+		Type:          Generic,
+		ExcludeDirs:   []string{".git"},
 	}
 }
 
@@ -49,14 +53,15 @@ func (indexer *Indexer) Index(root string, isSpecial bool) {
 		indexer.GetTagFileNameForGemset(root),
 	}
 	// TODO: This should be robust if one of the files does not exist
-	err := ConcatFiles(filepath.Join(root, indexer.TagFile), tagFiles, root)
+	err := utils.ConcatFiles(filepath.Join(root, indexer.TagFilePrefix), tagFiles, root)
 	if err != nil {
 		log.Error("concat", tagFiles, err.Error())
 	}
 }
 
-func (indexer *Indexer) CreateWatcher(root string) Watchable {
-	w := NewWatcher(root, indexer.ExcludeDirs, indexer.MaxPeriod)
+func (indexer *Indexer) CreateWatcher(root string) watchers.Watchable {
+	w := watchers.NewWatcher(root, indexer.ExcludeDirs,
+		indexer.TagFilePrefix, indexer.MaxPeriod)
 	if indexer.Type == Rvm {
 		w.SpecialFile = "Gemfile.lock"
 	}
@@ -65,7 +70,7 @@ func (indexer *Indexer) CreateWatcher(root string) Watchable {
 
 func (indexer *Indexer) indexProject(root string) {
 	args := indexer.GetProjectArguments(root)
-	out, err := ExecInPath(indexer.Program, args, root)
+	out, err := utils.ExecInPath(indexer.Program, args, root)
 	if err != nil {
 		log.Error(out, err.Error())
 	}
@@ -77,7 +82,7 @@ func (indexer *Indexer) indexGemset(root string) {
 		if len(args) == 0 {
 			return
 		}
-		out, err := ExecInPath(indexer.Program, args, root)
+		out, err := utils.ExecInPath(indexer.Program, args, root)
 		if err != nil {
 			log.Error(out, err.Error())
 		}
@@ -86,14 +91,14 @@ func (indexer *Indexer) indexGemset(root string) {
 
 func (indexer *Indexer) GetProjectArguments(root string) []string {
 	args := indexer.GetGenericArguments(root)
-	args = append(args, fmt.Sprintf("-f %s.project", indexer.TagFile))
+	args = append(args, fmt.Sprintf("-f %s.project", indexer.TagFilePrefix))
 	args = append(args, ".")
 	return args
 }
 
 func (indexer *Indexer) GetGemsetArguments(root string) []string {
 	args := indexer.GetGenericArguments(root)
-	args = append(args, fmt.Sprintf("-f %s.gemset", indexer.TagFile))
+	args = append(args, fmt.Sprintf("-f %s.gemset", indexer.TagFilePrefix))
 	if gemsetPath, err := rvmGemsetPath(root); err != nil {
 		log.Error("Can not determine gemset path for rvm project at ", root)
 		return []string{}
@@ -117,17 +122,17 @@ func (indexer *Indexer) GetGenericArguments(root string) []string {
 }
 
 func (indexer *Indexer) GetTagFileNameForGemset(root string) string {
-	return filepath.Join(root, fmt.Sprintf("%s.%s", indexer.TagFile, "gemset"))
+	return filepath.Join(root, fmt.Sprintf("%s.%s", indexer.TagFilePrefix, "gemset"))
 }
 
 func (indexer *Indexer) GemsetTagFileExists(root string) bool {
-	return FileExists(indexer.GetTagFileNameForGemset(root))
+	return utils.FileExists(indexer.GetTagFileNameForGemset(root))
 }
 
 func (indexer *Indexer) GetTagFileNameForProject(root string) string {
-	return filepath.Join(root, fmt.Sprintf("%s.%s", indexer.TagFile, "project"))
+	return filepath.Join(root, fmt.Sprintf("%s.%s", indexer.TagFilePrefix, "project"))
 }
 
 func (indexer *Indexer) ProjectTagFileExists(root string) bool {
-	return FileExists(indexer.GetTagFileNameForProject(root))
+	return utils.FileExists(indexer.GetTagFileNameForProject(root))
 }

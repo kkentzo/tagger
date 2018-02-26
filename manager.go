@@ -4,6 +4,8 @@ import (
 	"context"
 	"sync"
 
+	"github.com/kkentzo/tagger/indexers"
+	"github.com/kkentzo/tagger/utils"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -13,12 +15,12 @@ type ProjectWithContext struct {
 }
 
 type Manager struct {
-	indexer  Indexable
+	indexer  indexers.Indexable
 	projects map[string]*ProjectWithContext
 	pg       sync.WaitGroup
 }
 
-func NewManager(indexer Indexable, projects []struct{ Path string }) *Manager {
+func NewManager(indexer indexers.Indexable, projects []struct{ Path string }) *Manager {
 	manager := &Manager{
 		indexer:  indexer,
 		projects: make(map[string]*ProjectWithContext),
@@ -30,9 +32,9 @@ func NewManager(indexer Indexable, projects []struct{ Path string }) *Manager {
 }
 
 func (manager *Manager) Add(path string) {
-	path = Canonicalize(path)
+	path = utils.Canonicalize(path)
 	// skip non-existent path
-	if !FileExists(path) {
+	if !utils.FileExists(path) {
 		log.Debugf("Path %s does not exist in filesystem", path)
 		return
 	}
@@ -57,7 +59,7 @@ func (manager *Manager) Add(path string) {
 }
 
 func (manager *Manager) Remove(path string) {
-	path = Canonicalize(path)
+	path = utils.Canonicalize(path)
 	// what happens if path does not exist?
 	// This is legit in case the project root is deleted from the fs
 	if project, ok := manager.projects[path]; ok {
@@ -70,7 +72,7 @@ func (manager *Manager) Remove(path string) {
 }
 
 func (manager *Manager) Exists(path string) bool {
-	_, ok := manager.projects[Canonicalize(path)]
+	_, ok := manager.projects[utils.Canonicalize(path)]
 	return ok
 }
 
