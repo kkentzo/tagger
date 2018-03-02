@@ -22,6 +22,9 @@ func NewConfig(configFilePath string) *Config {
 	if err != nil {
 		log.Fatal("Config file not found: ", configFilePath)
 	}
-	yaml.Unmarshal(contents, config)
+	err = yaml.Unmarshal(contents, config)
+	if err != nil {
+		log.Fatalf("Error parsing %s: %s", configFilePath, err.Error())
+	}
 	return config
 }
