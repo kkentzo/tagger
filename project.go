@@ -10,6 +10,7 @@ import (
 
 type Monitorable interface {
 	Monitor(context.Context)
+	// TODO: change arg to pointer
 	Index(watchers.Event)
 }
 

@@ -16,11 +16,10 @@ type Watchable interface {
 }
 
 type Watcher struct {
-	Root        string
-	MaxPeriod   time.Duration
-	SpecialFile string
-	fsWatcher   FsWatchable
-	events      chan Event
+	Root      string
+	MaxPeriod time.Duration
+	fsWatcher FsWatchable
+	events    chan Event
 }
 
 func NewWatcher(root string, exclusions []string, tagFilePrefix string, maxFrequency time.Duration) *Watcher {
@@ -48,10 +47,12 @@ func (watcher *Watcher) Watch(ctx context.Context) {
 	log.Info("Watching ", watcher.Root)
 	// start monitoring
 	mustReindex := false
-	isSpecial := false
 
 	ticker := time.NewTicker(watcher.MaxPeriod)
 	defer ticker.Stop()
+
+	// TODO: Change this to pointer
+	event := *NewEvent()
 
 	for {
 		select {
@@ -59,16 +60,16 @@ func (watcher *Watcher) Watch(ctx context.Context) {
 			return
 		case <-ticker.C:
 			if mustReindex {
-				watcher.events <- Event{IsSpecial: isSpecial}
+				watcher.events <- event
 				mustReindex = false
-				isSpecial = false
+				event = *NewEvent()
 			}
-		case event := <-watcher.fsWatcher.Events():
-			mustReindex = mustReindex ||
-				watcher.fsWatcher.Handle(event)
-			if mustReindex && event.Name == watcher.SpecialFile {
-				isSpecial = true
+		case fsEvent := <-watcher.fsWatcher.Events():
+			shouldReindex := watcher.fsWatcher.Handle(fsEvent)
+			if shouldReindex {
+				event.Names.Add(fsEvent.Name)
 			}
+			mustReindex = mustReindex || shouldReindex
 		case err := <-watcher.fsWatcher.Errors():
 			log.Error(err.Error())
 		}

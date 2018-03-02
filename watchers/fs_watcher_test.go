@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/kkentzo/tagger/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -278,7 +279,7 @@ func Test_discover_IncludesAllDirectoriesUnderRoot(t *testing.T) {
 	err = os.Mkdir(dirNameAA, os.ModePerm)
 	assert.Nil(t, err)
 
-	dirs, err := discover(path, NewPathSet([]string{}))
+	dirs, err := discover(path, utils.NewSet([]string{}))
 	assert.Equal(t, 4, len(dirs))
 	assert.Contains(t, dirs, path)
 	assert.Contains(t, dirs, dirNameA)
@@ -298,7 +299,7 @@ func Test_discover_DoesNotIncludeFiles(t *testing.T) {
 	assert.Nil(t, err)
 	TouchFile(t, filepath.Join(dirName, "test_file"))
 
-	dirs, err := discover(path, NewPathSet([]string{}))
+	dirs, err := discover(path, utils.NewSet([]string{}))
 	assert.Equal(t, 2, len(dirs))
 	assert.Contains(t, dirs, path)
 	assert.Contains(t, dirs, dirName)
@@ -318,7 +319,7 @@ func Test_discover_DoesNotIncludeExcludedDirectories(t *testing.T) {
 	err = os.Mkdir(ignoredDir, os.ModePerm)
 	assert.Nil(t, err)
 
-	dirs, err := discover(path, NewPathSet([]string{"log"}))
+	dirs, err := discover(path, utils.NewSet([]string{"log"}))
 	assert.Equal(t, 2, len(dirs))
 	assert.Contains(t, dirs, path)
 	assert.Contains(t, dirs, dirName)

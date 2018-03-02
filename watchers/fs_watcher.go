@@ -24,7 +24,7 @@ type FsWatchable interface {
 
 type FsWatcher struct {
 	*fsnotify.Watcher
-	exclusions    *PathSet
+	exclusions    *utils.Set
 	tagFilePrefix string
 }
 
@@ -35,7 +35,7 @@ func NewFsWatcher(exclusions []string, tagFilePrefix string) *FsWatcher {
 	}
 	return &FsWatcher{
 		Watcher:       w,
-		exclusions:    NewPathSet(exclusions),
+		exclusions:    utils.NewSet(exclusions),
 		tagFilePrefix: tagFilePrefix,
 	}
 }
@@ -94,7 +94,7 @@ func (watcher *FsWatcher) Errors() chan error {
 }
 
 // return a slice with all directories under root but the excluded ones
-func discover(root string, exclusions *PathSet) ([]string, error) {
+func discover(root string, exclusions *utils.Set) ([]string, error) {
 	var directories []string
 	err := filepath.Walk(root,
 		func(path string, info os.FileInfo, err error) error {
