@@ -9,8 +9,8 @@ import (
 )
 
 type Monitorable interface {
-	Monitor(ctx context.Context)
-	Index(bool)
+	Monitor(context.Context)
+	Index(watchers.Event)
 }
 
 type Project struct {
@@ -29,15 +29,15 @@ func DefaultProject(indexer indexers.Indexable, watcher watchers.Watchable) *Pro
 
 func (project *Project) Monitor(ctx context.Context) {
 	// perform an initial indexing
-	go project.Index(false)
+	go project.Index(watchers.Event{})
 	defer project.Watcher.Close()
 	wctx, cancel := context.WithCancel(ctx)
 	go project.Watcher.Watch(wctx)
 	for {
 		select {
-		// TODO: Consume event (Special File)
 		case e := <-project.Watcher.Events():
-			go project.Index(e.IsSpecial)
+			// TODO: is this indexing goroutine thread-safe here?
+			go project.Index(e)
 		case <-ctx.Done():
 			cancel()
 			return
@@ -45,7 +45,7 @@ func (project *Project) Monitor(ctx context.Context) {
 	}
 }
 
-func (project *Project) Index(isSpecial bool) {
+func (project *Project) Index(event watchers.Event) {
 	log.Info("Indexing ", project.Path)
-	project.Indexer.Index(project.Path, isSpecial)
+	project.Indexer.Index(project.Path, event)
 }

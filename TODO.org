@@ -39,11 +39,12 @@
 *** DONE Consume Event#IsSpecial in Project#Monitor and Indexer#Index
 *** DONE keep two files and concat to one in any case
 *** DONE Unit Tests for all new Indexer methods
-** TODO Restructure code in packages
+** DONE Restructure code in packages
 ** Design polymorphic Indexer
 *** currently we have generic and rvm; there should be a better process
+*** consume event in project and pass to indexer
 ** Include whitelist globs in watcher (e.g. *.rb for files)
-** Cleanups + TODOs
+** Check TODOs
 ** Write README
 ** Banners on README (go report, CI build, coverage)
 ** Advertise!! Publish!!

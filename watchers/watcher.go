@@ -15,10 +15,6 @@ type Watchable interface {
 	Close()
 }
 
-type Event struct {
-	IsSpecial bool
-}
-
 type Watcher struct {
 	Root        string
 	MaxPeriod   time.Duration

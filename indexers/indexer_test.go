@@ -49,7 +49,7 @@ func Test_Indexer_Index_ShouldTriggerCommand(t *testing.T) {
 		Type:    Generic,
 	}
 
-	indexer.Index(path, false)
+	indexer.Index(path, watchers.Event{})
 	assert.True(t, utils.FileExists(filepath.Join(path, "aaa")))
 }
 

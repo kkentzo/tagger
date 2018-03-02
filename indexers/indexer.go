@@ -13,7 +13,8 @@ import (
 const TagFilePrefix string = "TAGS"
 
 type Indexable interface {
-	Index(string, bool)
+	Create() Indexable
+	Index(string, watchers.Event)
 	CreateWatcher(string) watchers.Watchable
 }
 
@@ -43,9 +44,9 @@ func DefaultIndexer() *Indexer {
 	}
 }
 
-func (indexer *Indexer) Index(root string, isSpecial bool) {
+func (indexer *Indexer) Index(root string, event watchers.Event) {
 	indexer.indexProject(root)
-	if isSpecial || !indexer.GemsetTagFileExists(root) {
+	if event.IsSpecial || !indexer.GemsetTagFileExists(root) {
 		indexer.indexGemset(root)
 	}
 	tagFiles := []string{
@@ -57,6 +58,10 @@ func (indexer *Indexer) Index(root string, isSpecial bool) {
 	if err != nil {
 		log.Error("concat", tagFiles, err.Error())
 	}
+}
+
+func (indexer *Indexer) Create() Indexable {
+	return indexer
 }
 
 func (indexer *Indexer) CreateWatcher(root string) watchers.Watchable {

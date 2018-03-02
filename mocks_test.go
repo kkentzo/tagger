@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 
+	"github.com/kkentzo/tagger/indexers"
 	"github.com/kkentzo/tagger/watchers"
 	"github.com/stretchr/testify/mock"
 )
@@ -11,8 +12,13 @@ type MockIndexer struct {
 	mock.Mock
 }
 
-func (indexer *MockIndexer) Index(root string, isSpecial bool) {
-	indexer.Called(root, isSpecial)
+func (indexer *MockIndexer) Create() indexers.Indexable {
+	args := indexer.Called()
+	return args.Get(0).(indexers.Indexable)
+}
+
+func (indexer *MockIndexer) Index(root string, event watchers.Event) {
+	indexer.Called(root, event)
 }
 
 func (indexer *MockIndexer) CreateWatcher(root string) watchers.Watchable {

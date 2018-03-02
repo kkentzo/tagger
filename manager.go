@@ -45,7 +45,7 @@ func (manager *Manager) Add(path string) {
 	if _, ok := manager.projects[path]; !ok {
 		project := &Project{
 			Path:    path,
-			Indexer: manager.indexer,
+			Indexer: manager.indexer.Create(),
 			Watcher: manager.indexer.CreateWatcher(path),
 		}
 		ctx, cancel := context.WithCancel(context.Background())
