@@ -9,7 +9,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_Indexer_GetGemsetArguments_WhenIndexerIsRvm(t *testing.T) {
+func CreateRvmFiles(root string) {
+}
+
+func Test_RvmIndexer_Index_ShouldIndexGemset_WhenGemsetTagFile_DoesNotExist(t *testing.T) {
+}
+
+func Test_RvmIndexer_Index_ShouldIndexGemset_WhenEventNames_ContainGemfileLock(t *testing.T) {
+}
+
+func Test_RvmIndexer_Index_ShouldConcatTagFiles(t *testing.T) {
+}
+
+func Test_RvmIndexer_GetGemsetArguments_WhenIndexerIsRvm(t *testing.T) {
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
 	defer os.RemoveAll(path)
@@ -27,19 +39,19 @@ func Test_Indexer_GetGemsetArguments_WhenIndexerIsRvm(t *testing.T) {
 	indexer.Type = Rvm
 	args := indexer.GetGemsetArguments(path)
 	CheckGenericArguments(t, args)
-	gp, err := rvmGemsetPath(path)
+	gp, err := rvmGemsetPathFromFiles(path)
 	assert.Nil(t, err)
 	assert.Contains(t, args, "-f TAGS.gemset")
 	assert.Equal(t, gp, args[len(args)-1])
 }
 
-func Test_Indexer_GetTagFileNameForGemset(t *testing.T) {
+func Test_RvmIndexer_GetTagFileNameForGemset(t *testing.T) {
 	indexer := DefaultIndexer()
 	assert.Equal(t, "aaa/TAGS.gemset", indexer.GetTagFileNameForGemset("aaa"))
 
 }
 
-func Test_Indexer_GemsetTagFileExists_ReturnsTrue_WhenTagFileExists(t *testing.T) {
+func Test_RvmIndexer_GemsetTagFileExists_ReturnsTrue_WhenTagFileExists(t *testing.T) {
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
 	defer os.RemoveAll(path)
@@ -50,7 +62,7 @@ func Test_Indexer_GemsetTagFileExists_ReturnsTrue_WhenTagFileExists(t *testing.T
 	assert.True(t, indexer.GemsetTagFileExists(path))
 }
 
-func Test_Indexer_GemsetTagFileExists_ReturnsFalse_WhenTagFileDoesNotExist(t *testing.T) {
+func Test_RvmIndexer_GemsetTagFileExists_ReturnsFalse_WhenTagFileDoesNotExist(t *testing.T) {
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
 	defer os.RemoveAll(path)

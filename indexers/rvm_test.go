@@ -93,13 +93,13 @@ func Test_Rvm_rubyGemsetPath_ReturnsGemset(t *testing.T) {
 	f.Close()
 	assert.Nil(t, err)
 
-	gsPath, err := rvmGemsetPath(path)
+	gsPath, err := rvmGemsetPathFromFiles(path)
 	expPath := filepath.Join(os.Getenv("HOME"), ".rvm/gems/ruby-2.1.3@gem/gems")
 	assert.Equal(t, expPath, gsPath)
 	assert.Nil(t, err)
 }
 
-func Test_Rvm_rvmGemsetPath_ReturnsError_WhenNotFound(t *testing.T) {
+func Test_Rvm_rvmGemsetPathFromFiles_ReturnsError_WhenNotFound(t *testing.T) {
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
 	defer os.RemoveAll(path)

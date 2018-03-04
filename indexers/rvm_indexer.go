@@ -18,7 +18,7 @@ func (indexer *RvmIndexer) Create() Indexable {
 }
 
 func (indexer *RvmIndexer) Index(root string, event watchers.Event) {
-	if event.Names.Has("Gemfile.lock") {
+	if event.Names.Has("Gemfile.lock") || !indexer.GemsetTagFileExists(root) {
 		indexer.indexGemset(root)
 		event.Names.Remove("Gemfile.lock")
 	}
@@ -33,10 +33,6 @@ func (indexer *RvmIndexer) Index(root string, event watchers.Event) {
 		log.Error("concat", tagFiles, err.Error())
 	}
 }
-
-// func (indexer *RvmIndexer) CreateWatcher(root string) watchers.Watchable {
-// 	return nil
-// }
 
 func (indexer *RvmIndexer) indexGemset(root string) {
 	if indexer.Type == Rvm && isRvm(root) {
@@ -54,7 +50,7 @@ func (indexer *RvmIndexer) indexGemset(root string) {
 func (indexer *Indexer) GetGemsetArguments(root string) []string {
 	args := indexer.GetGenericArguments(root)
 	args = append(args, fmt.Sprintf("-f %s.gemset", indexer.TagFileName))
-	if gemsetPath, err := rvmGemsetPath(root); err != nil {
+	if gemsetPath, err := rvmGemsetPathFromFiles(root); err != nil {
 		log.Error("Can not determine gemset path for rvm project at ", root)
 		return []string{}
 	} else {
