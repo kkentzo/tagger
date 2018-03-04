@@ -38,6 +38,7 @@ func Test_Indexer_DefaultIndexer(t *testing.T) {
 	assert.Contains(t, indexer.ExcludeDirs, ".git")
 }
 
+// TODO: This breaks in Travis CI
 func Test_Indexer_Index_ShouldTriggerCommand(t *testing.T) {
 	path, err := ioutil.TempDir("", "tagger-tests")
 	assert.Nil(t, err)
