@@ -30,7 +30,7 @@ func DefaultProject(indexer indexers.Indexable, watcher watchers.Watchable) *Pro
 
 func (project *Project) Monitor(ctx context.Context) {
 	// perform an initial indexing
-	go project.Index(watchers.Event{})
+	go project.Index(watchers.NewEvent())
 	defer project.Watcher.Close()
 	wctx, cancel := context.WithCancel(ctx)
 	go project.Watcher.Watch(wctx)

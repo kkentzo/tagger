@@ -32,7 +32,7 @@ func Test_Project_Monitor_WillIndexProject_OnWatcherEvent(t *testing.T) {
 	watcher.On("Watch", mock.AnythingOfType("*context.cancelCtx"))
 
 	indexed := make(chan watchers.Event)
-	indexer.On("Index", ".", watchers.Event{}).
+	indexer.On("Index", ".", mock.AnythingOfType("watchers.Event")).
 		Run(func(args mock.Arguments) { indexed <- event })
 
 	project := DefaultProject(indexer, watcher)
@@ -43,7 +43,7 @@ func Test_Project_Monitor_WillIndexProject_OnWatcherEvent(t *testing.T) {
 func Test_Project_Monitor_WillCloseWatcher_OnContextCancellation(t *testing.T) {
 	indexer := &MockIndexer{}
 	watcher := &MockWatcher{}
-	indexer.On("Index", ".", watchers.Event{})
+	indexer.On("Index", ".", mock.AnythingOfType("watchers.Event"))
 
 	watcher.On("Watch", mock.AnythingOfType("*context.cancelCtx"))
 	watcher.On("Events")
@@ -62,7 +62,7 @@ func Test_Project_Index_WillCallTheIndexer(t *testing.T) {
 	watcher := &MockWatcher{}
 
 	called := false
-	indexer.On("Index", ".", watchers.Event{}).
+	indexer.On("Index", ".", mock.AnythingOfType("watchers.Event")).
 		Run(func(args mock.Arguments) { called = true })
 
 	project := DefaultProject(indexer, watcher)

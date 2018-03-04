@@ -52,7 +52,7 @@ func (watcher *Watcher) Watch(ctx context.Context) {
 	defer ticker.Stop()
 
 	// TODO: Change this to pointer
-	event := *NewEvent()
+	event := NewEvent()
 
 	for {
 		select {
@@ -62,7 +62,7 @@ func (watcher *Watcher) Watch(ctx context.Context) {
 			if mustReindex {
 				watcher.events <- event
 				mustReindex = false
-				event = *NewEvent()
+				event = NewEvent()
 			}
 		case fsEvent := <-watcher.fsWatcher.Events():
 			shouldReindex := watcher.fsWatcher.Handle(fsEvent)

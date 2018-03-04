@@ -6,8 +6,8 @@ type Event struct {
 	Names *utils.Set
 }
 
-func NewEvent() *Event {
-	return &Event{
+func NewEvent() Event {
+	return Event{
 		Names: utils.NewSet([]string{}),
 	}
 }
