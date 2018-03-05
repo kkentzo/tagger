@@ -67,7 +67,7 @@ func (indexer *Indexer) indexProject(root string) {
 	args := indexer.GetProjectArguments(root)
 	out, err := utils.ExecInPath(indexer.Program, args, root)
 	if err != nil {
-		log.Error(out, err.Error())
+		log.Error(string(out), err.Error())
 	}
 }
 
