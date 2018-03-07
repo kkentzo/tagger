@@ -44,14 +44,10 @@ func Test_Indexer_Index_ShouldTriggerCommand(t *testing.T) {
 	assert.Nil(t, err)
 	defer os.RemoveAll(path)
 
-	indexer := &Indexer{
-		Program: "touch",
-		Args:    []string{"aaa"},
-		Type:    Generic,
-	}
+	indexer := DefaultIndexer()
 
 	indexer.Index(path, watchers.Event{})
-	assert.True(t, utils.FileExists(filepath.Join(path, "aaa")))
+	assert.True(t, utils.FileExists(filepath.Join(path, indexer.TagFileName)))
 }
 
 func Test_Indexer_CreateWatcher_ShouldReturnAWatcher(t *testing.T) {
@@ -79,29 +75,4 @@ func Test_Indexer_GetProjectArguments(t *testing.T) {
 	CheckGenericArguments(t, args)
 	assert.Contains(t, args, "-f TAGS")
 	assert.Equal(t, ".", args[len(args)-1])
-}
-
-func Test_Indexer_GetTagFileNameForProject(t *testing.T) {
-	indexer := DefaultIndexer()
-	assert.Equal(t, "aaa/TAGS.project", indexer.GetTagFileNameForProject("aaa"))
-}
-
-func Test_Indexer_ProjectTagFileExists_ReturnsTrue_WhenTagFileExists(t *testing.T) {
-	path, err := ioutil.TempDir("", "tagger-tests")
-	assert.Nil(t, err)
-	defer os.RemoveAll(path)
-
-	TouchFile(t, filepath.Join(path, "TAGS.project")).Close()
-
-	indexer := DefaultIndexer()
-	assert.True(t, indexer.ProjectTagFileExists(path))
-}
-
-func Test_Indexer_ProjectTagFileExists_ReturnsFalse_WhenTagFileDoesNotExist(t *testing.T) {
-	path, err := ioutil.TempDir("", "tagger-tests")
-	assert.Nil(t, err)
-	defer os.RemoveAll(path)
-
-	indexer := DefaultIndexer()
-	assert.False(t, indexer.ProjectTagFileExists(path))
 }

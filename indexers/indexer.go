@@ -2,7 +2,6 @@ package indexers
 
 import (
 	"fmt"
-	"path/filepath"
 	"time"
 
 	"github.com/kkentzo/tagger/utils"
@@ -51,7 +50,8 @@ func (indexer *Indexer) Index(root string, event watchers.Event) {
 func (indexer *Indexer) Create() Indexable {
 	if indexer.Type == Rvm {
 		return &RvmIndexer{
-			Indexer: indexer,
+			Indexer:    indexer,
+			RvmHandler: DefaultRvmHandler(),
 		}
 	} else {
 		return indexer
@@ -89,12 +89,4 @@ func (indexer *Indexer) GetGenericArguments(root string) []string {
 	}
 	args = append(args, exclusions...)
 	return args
-}
-
-func (indexer *Indexer) GetTagFileNameForProject(root string) string {
-	return filepath.Join(root, fmt.Sprintf("%s.%s", indexer.TagFileName, "project"))
-}
-
-func (indexer *Indexer) ProjectTagFileExists(root string) bool {
-	return utils.FileExists(indexer.GetTagFileNameForProject(root))
 }

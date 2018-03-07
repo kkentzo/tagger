@@ -41,8 +41,10 @@
 *** DONE Unit Tests for all new Indexer methods
 ** DONE Restructure code in packages
 ** Design polymorphic Indexer
-*** currently we have generic and rvm; there should be a better process
-*** consume event in project and pass to indexer
+*** DONE consume event in project and pass to indexer
+*** DONE Write rvm_indexer tests
+*** DONE Introduce Rvm Handler
+*** TODO Smoke-Test functionality
 ** Include whitelist globs in watcher (e.g. *.rb for files)
 ** Check TODOs
 ** Write README
@@ -50,6 +52,7 @@
 ** Advertise!! Publish!!
 ** Configure logger properly (timestamp, prefixes)
 * More advanced features
+** Think about testing with ext deps (like bundler, rvm in RvmHandler#GemsetPath)
 ** Adaptive indexing - Measure indexing time per project - adjust maxFrequency accordingly
 ** In-memory tag indexing and processing ???
 ** Change PathSet to PathTree for filesystem
