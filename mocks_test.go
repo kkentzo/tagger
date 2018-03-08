@@ -12,8 +12,8 @@ type MockIndexer struct {
 	mock.Mock
 }
 
-func (indexer *MockIndexer) Create() indexers.Indexable {
-	args := indexer.Called()
+func (indexer *MockIndexer) Create(root string) indexers.Indexable {
+	args := indexer.Called(root)
 	return args.Get(0).(indexers.Indexable)
 }
 

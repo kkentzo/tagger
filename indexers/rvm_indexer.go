@@ -14,7 +14,7 @@ type RvmIndexer struct {
 	RvmHandler RvmHandleable
 }
 
-func (indexer *RvmIndexer) Create() Indexable {
+func (indexer *RvmIndexer) Create(root string) Indexable {
 	return indexer
 }
 

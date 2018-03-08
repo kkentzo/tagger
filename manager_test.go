@@ -19,7 +19,7 @@ func Test_NewManager(t *testing.T) {
 	watcher := CreateMockWatcher()
 
 	indexer := &MockIndexer{}
-	indexer.On("Create").Return(indexer)
+	indexer.On("Create", path).Return(indexer)
 	indexer.On("CreateWatcher", path).Return(watcher)
 	indexer.On("Index", path, mock.AnythingOfType("watchers.Event"))
 
@@ -54,7 +54,7 @@ func Test_Manager_Add_WillAddProject_WhenPathExists(t *testing.T) {
 	defer os.RemoveAll(path)
 
 	watcher := CreateMockWatcher()
-	indexer.On("Create").Return(indexer)
+	indexer.On("Create", path).Return(indexer)
 	indexer.On("CreateWatcher", path).Return(watcher)
 	indexer.On("Index", path, mock.AnythingOfType("watchers.Event"))
 	manager.Add(path)
@@ -72,7 +72,7 @@ func Test_Manager_Remove_WillRemoveProjectFromManager(t *testing.T) {
 	}
 	watcher := CreateMockWatcher()
 	indexer := &MockIndexer{}
-	indexer.On("Create").Return(indexer)
+	indexer.On("Create", path).Return(indexer)
 	indexer.On("CreateWatcher", path).Return(watcher)
 	indexer.On("Index", path, mock.AnythingOfType("watchers.Event"))
 	manager := NewManager(indexer, projects)

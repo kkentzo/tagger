@@ -12,23 +12,15 @@ import (
 const TagFileName string = "TAGS"
 
 type Indexable interface {
-	Create() Indexable
+	Create(string) Indexable
 	Index(string, watchers.Event)
 	CreateWatcher(string) watchers.Watchable
 }
 
-type IndexerType string
-
-const (
-	Generic IndexerType = "generic"
-	Rvm                 = "rvm"
-)
-
 type Indexer struct {
 	Program     string
 	Args        []string
-	TagFileName string `yaml:"tag_file"`
-	Type        IndexerType
+	TagFileName string        `yaml:"tag_file"`
 	ExcludeDirs []string      `yaml:"exclude"`
 	MaxPeriod   time.Duration `yaml:"max_period"`
 }
@@ -38,7 +30,6 @@ func DefaultIndexer() *Indexer {
 		Program:     "ctags",
 		Args:        []string{"-R", "-e"},
 		TagFileName: TagFileName,
-		Type:        Generic,
 		ExcludeDirs: []string{".git"},
 	}
 }
@@ -47,8 +38,9 @@ func (indexer *Indexer) Index(root string, event watchers.Event) {
 	indexer.indexProject(root)
 }
 
-func (indexer *Indexer) Create() Indexable {
-	if indexer.Type == Rvm {
+func (indexer *Indexer) Create(root string) Indexable {
+	rvm := &RvmHandler{}
+	if rvm.IsRuby(root) {
 		return &RvmIndexer{
 			Indexer:    indexer,
 			RvmHandler: DefaultRvmHandler(),

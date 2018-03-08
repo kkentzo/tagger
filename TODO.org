@@ -44,6 +44,7 @@
 *** DONE consume event in project and pass to indexer
 *** DONE Write rvm_indexer tests
 *** DONE Introduce Rvm Handler
+*** Transform RvmHandleable into a generic Library Watcher
 *** TODO Smoke-Test functionality
 ** Include whitelist globs in watcher (e.g. *.rb for files)
 ** Check TODOs

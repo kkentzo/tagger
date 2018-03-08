@@ -6,7 +6,6 @@ indexer:
     - -e
     - --languages=ruby
   tag_file: TAGS
-  type: rvm
   exclude:
     - .git
     - log

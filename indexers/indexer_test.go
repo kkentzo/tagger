@@ -34,7 +34,6 @@ func Test_Indexer_DefaultIndexer(t *testing.T) {
 	assert.Contains(t, indexer.Args, "-R")
 	assert.Contains(t, indexer.Args, "-e")
 	assert.Equal(t, "TAGS", indexer.TagFileName)
-	assert.Equal(t, Generic, indexer.Type)
 	assert.Contains(t, indexer.ExcludeDirs, ".git")
 }
 
@@ -51,10 +50,7 @@ func Test_Indexer_Index_ShouldTriggerCommand(t *testing.T) {
 }
 
 func Test_Indexer_CreateWatcher_ShouldReturnAWatcher(t *testing.T) {
-	indexer := &Indexer{
-		MaxPeriod: 2 * time.Second,
-		Type:      Rvm,
-	}
+	indexer := &Indexer{MaxPeriod: 2 * time.Second}
 	watcher := indexer.CreateWatcher("foo").(*watchers.Watcher)
 	defer watcher.Close()
 
