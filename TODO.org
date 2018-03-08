@@ -40,12 +40,11 @@
 *** DONE keep two files and concat to one in any case
 *** DONE Unit Tests for all new Indexer methods
 ** DONE Restructure code in packages
-** Design polymorphic Indexer
+** DONE Design polymorphic Indexer
 *** DONE consume event in project and pass to indexer
 *** DONE Write rvm_indexer tests
 *** DONE Introduce Rvm Handler
-*** Transform RvmHandleable into a generic Library Watcher
-*** TODO Smoke-Test functionality
+*** DONE Smoke-Test functionality
 ** Include whitelist globs in watcher (e.g. *.rb for files)
 ** Check TODOs
 ** Write README
@@ -53,6 +52,10 @@
 ** Advertise!! Publish!!
 ** Configure logger properly (timestamp, prefixes)
 * More advanced features
+** Think about a more general secondary indexer (ala RvmIndexer)
+*** needs also a more general RvmHandleable interface (an IndexerHelper??)
+*** should be decoupled from Rvm
+*** goal should be to write the implementation and then add it to Indexer#Create
 ** Think about testing with ext deps (like bundler, rvm in RvmHandler#GemsetPath)
 ** Adaptive indexing - Measure indexing time per project - adjust maxFrequency accordingly
 ** In-memory tag indexing and processing ???
