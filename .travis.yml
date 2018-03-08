@@ -15,3 +15,14 @@ install:
 script:
   - go build -v
   - go test -v -cover ./...
+deploy:
+  provider: releases
+  api_key:
+    secure: Yp2KhQU8Aj4ZP+g11VjnYeURFUwqqOL75n8B6ftv1gYYjjqlAUEOcinnXhbu2k0t2O4CC0TIBxliFMeXMDkD3WmvC3nPkUz9elm9CvhDc7XsTVTNuFcUIrU8yAkUsBqqTXG42o1ue9VdGTLD62tc9M5BLEGElTUiSumMJmTcANr3ADAizwq+kiLejdHnFlBCwDqR3g3/2eNl0KpAL/SJqyINk7zNmmAS55BPN7FQNwcDp4lDmEGZDIb536QumKIiIscmpZ+UdW3oSF9CjZvW8LTja2G0R7BGqPKCB4uxXCVaUsj4k8du+p5y6W3Z7L94uS+nvKR84DYTULdQgP6bPfVO5+VeDQ2MNaJy/zwq552/sBQrQOwwLn+2XXR3EDh5mE7IpeDa7F1GZ9S4rLqgePtQxCT6coNj5uQWZItESvh1rwUQgZL/KM4xMCe2CzgtGf5+/LeUH5MGVbhKTbOUroFcsLL3O2aJMdN8hWoeOgIwGIarvFIf7YPFaBczFbILsZSTUp7fAgsc3AYP/+tIMmeR0pjN6ajPQ87TFxSUyYMfu2i6niZMG0CSkSdZf2415ulTASzzqIRiqicfj2TdYG1mcVpZvYvLBdro6GIsibnbPUUdukgvQMuWLOZnBnjdKKZu4ZDhL+IObJtfc3iAiY3pRHjibUF3p0JCosHmSXM=
+  file: tagger
+  skip_cleanup: true
+  on:
+    repo: kkentzo/tagger
+    tags: true
+    branch: master
+    go: 1.9
