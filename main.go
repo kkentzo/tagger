@@ -2,17 +2,20 @@ package main
 
 import (
 	"flag"
+	"os"
+	"path/filepath"
 
-	"github.com/kkentzo/tagger/utils"
 	log "github.com/sirupsen/logrus"
 )
+
+var DefaultConfigFilePath string = filepath.Join(os.Getenv("HOME"), ".tagger.yml")
 
 func main() {
 
 	log.SetFormatter(&log.TextFormatter{})
 
 	// parse command line args
-	configFilePath := flag.String("c", utils.Canonicalize("~/.tagger.yml"), "Path to config file")
+	configFilePath := flag.String("c", DefaultConfigFilePath, "Path to config file")
 	debug := flag.Bool("d", false, "Activate debug logging level")
 	flag.Parse()
 
