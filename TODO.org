@@ -45,6 +45,7 @@
 *** DONE Write rvm_indexer tests
 *** DONE Introduce Rvm Handler
 *** DONE Smoke-Test functionality
+** Fix broken -x functionality
 ** Include whitelist globs in watcher (e.g. *.rb for files)
 ** Check TODOs
 ** Write README
