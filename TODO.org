@@ -45,11 +45,12 @@
 *** DONE Write rvm_indexer tests
 *** DONE Introduce Rvm Handler
 *** DONE Smoke-Test functionality
-** Fix broken -x functionality
+** DONE Write README
+** DONE Banners on README (go report, CI build, coverage)
+** DONE Remove broken -x functionality
+** TODO Move top-level code to separate package
+** Check TODOs in code
 ** Include whitelist globs in watcher (e.g. *.rb for files)
-** Check TODOs
-** Write README
-** Banners on README (go report, CI build, coverage)
 ** Advertise!! Publish!!
 ** Configure logger properly (timestamp, prefixes)
 * More advanced features
