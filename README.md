@@ -15,8 +15,7 @@ projects using an external program such as `ctags`. While the use of
 `ctags` is quite popular among `emacs` and `vi` users especially for
 dynamically-typed languages, there exist no tools for automating the
 re-indexing of multiple projects as their respectives files are added,
-removed and changed. `tagger` is developed in order to fill this gap
-in tooling so as to make developer lives more productive and happy.
+removed and changed. `tagger` is developed in order to fill this gap.
 
 # Features
 
@@ -83,7 +82,7 @@ $ go build
 $ go test ./... -v
 ```
 
-# Wish list (Coming up)
+# Wish list
 
 Some features that may be added in the project at some point:
 
