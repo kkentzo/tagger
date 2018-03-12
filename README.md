@@ -15,7 +15,7 @@ projects using an external program such as `ctags`. While the use of
 `ctags` is quite popular among `emacs` and `vi` users especially for
 dynamically-typed languages, there exist no tools for automating the
 re-indexing of multiple projects as their respectives files are added,
-removed and changed. `tagger` is developed in order to fill this gap.
+removed and modified. `tagger` is developed in order to fill this gap.
 
 # Features
 
@@ -27,8 +27,8 @@ removed and changed. `tagger` is developed in order to fill this gap.
   change is detected (default is `ctags -R -e`)
 * exclusion filters for ignoring project directories
 * some support for secondary project directories (libraries) that are
-  located outside the project directory tree (only ruby's `rvm` gemset
-  paths supported at the moment)
+  located outside the project directory tree (only ruby's
+  `rvm`/`bundler` gemset paths supported at the moment)
 * throttling of reindexing events; especially useful for actively
   developed projects
 * a `yaml` configuration file for statically specifying which projects
